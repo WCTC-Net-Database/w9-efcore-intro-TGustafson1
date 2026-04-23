@@ -43,7 +43,7 @@ public class GameEngine
             return;
         }
 
-        var character = new Character { Name = name, Level = level, RoomId = roomId };
+        var character = new Player { Name = name, Level = level, RoomId = roomId };
 
         _context.Characters.Add(character);
         _context.SaveChanges();
