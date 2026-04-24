@@ -8,10 +8,17 @@ public class GameEngine
 {
     private readonly GameContext _context;
 
+
     public GameEngine(GameContext context)
     {
         _context = context;
+
     }
+
+    //public void Run()
+    //{
+    //    _menu.Show();
+    //}
 
     public void AddRoom()
     {

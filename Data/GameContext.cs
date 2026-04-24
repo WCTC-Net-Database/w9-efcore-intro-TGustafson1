@@ -8,11 +8,17 @@ public class GameContext : DbContext
 {
     public DbSet<Room> Rooms { get; set; }
     public DbSet<Character> Characters { get; set; }
+    public DbSet<Ability> Abilities { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public GameContext(DbContextOptions<GameContext> options) : base(options)
     {
-        optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=StartingEFCore;Trusted_Connection=True;");
     }
+
+    // OLD method of setting up DBContext with OnConfiguring, now we use DI in Startup.cs
+    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //{
+    //    optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=StartingEFCore;Trusted_Connection=True;");
+    //}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
