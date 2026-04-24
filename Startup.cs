@@ -32,6 +32,7 @@ namespace W09
 
             services.AddTransient<GameEngine>();
             services.AddTransient<Menu>();
+            services.AddTransient<CombatEngine>(); 
         }
     }
 }

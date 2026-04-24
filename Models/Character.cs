@@ -8,6 +8,8 @@ public abstract class Character : ICharacter
     public string Name { get; set; }
     public int Level { get; set; }
 
+    public int Health { get; set; }
+
     // Foreign key to Room
     public int RoomId { get; set; }
 

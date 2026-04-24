@@ -8,6 +8,8 @@ public class GameEngine
 {
     private readonly GameContext _context;
 
+    Random random = new Random();
+
 
     public GameEngine(GameContext context)
     {
@@ -15,18 +17,13 @@ public class GameEngine
 
     }
 
-    //public void Run()
-    //{
-    //    _menu.Show();
-    //}
-
     public void AddRoom()
     {
         Console.Write("Enter room name: ");
         var name = Console.ReadLine();
         Console.Write("Enter room description: ");
         var description = Console.ReadLine();
-        var room = new Room { Name = name, Description = description };
+        var room = new Room { Name = name ?? "Default Room", Description = description ?? "Default Description" };
         _context.Rooms.Add(room);
         _context.SaveChanges();
         Console.WriteLine($"Room '{name}' added successfully.");
@@ -124,5 +121,39 @@ public class GameEngine
         {
             Console.WriteLine("Character not found.");
         }
+    }
+
+    public void ChooseAdventurer()
+    {
+        Console.WriteLine("Choose which character to start the adventure with: ");
+        foreach (var player in _context.Characters.Where(c => c is Player))
+        {
+            Console.WriteLine($"\t{player.Id}: {player.Name} (Level {player.Level})");
+        }
+        var playerId = int.Parse(Console.ReadLine() ?? "0");
+
+
+        var selectedPlayer = _context.Characters.Find(playerId) as Player;
+
+
+        if (selectedPlayer != null)
+        {
+            Console.WriteLine($"Starting adventure with {selectedPlayer.Name} (Level {selectedPlayer.Level})");
+        }
+        else
+        {
+            Console.WriteLine("Character not found.");
+            return;
+        }
+
+        Console.WriteLine($"Welcome, {selectedPlayer.Name}! Your adventure begins in the {selectedPlayer.Room?.Name}.");
+
+        List<Goblin> goblins = _context.Characters.Where(c => c is Goblin).Cast<Goblin>().ToList();
+
+        CombatEngine combat = new CombatEngine();
+
+        var enemy = goblins[random.Next(2)];
+
+        combat.StartCombat(selectedPlayer, enemy);
     }
 }

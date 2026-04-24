@@ -12,6 +12,8 @@ namespace W09.Models
         public string Name { get; set; }
         public int Level { get; set; }
 
+        public int Health { get; set; }
+
         void Attack(ICharacter target);
     }
 }

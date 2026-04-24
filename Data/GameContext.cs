@@ -50,11 +50,14 @@ public class GameContext : DbContext
             var room1 = new Room { Name = "Entrance Hall", Description = "The main entry." };
             var room2 = new Room { Name = "Treasure Room", Description = "A room filled with treasures." };
 
-            var character1 = new Player{ Name = "Knight", Level = 1, Room = room1 };
-            var character2 = new Player { Name = "Wizard", Level = 2, Room = room2 };
+            var character1 = new Player{ Name = "Knight", Level = 1, Room = room1, Health = 16 };
+            var character2 = new Player { Name = "Wizard", Level = 2, Room = room2, Health = 12 };
+
+            var character3 = new Goblin { Name = "Goblin Grunt", Level = 1, Room = room1, Health = 8 };
+            var character4 = new Goblin { Name = "Goblin Shaman", Level = 2, Room = room2, Health = 10 };
 
             Rooms.AddRange(room1, room2);
-            Characters.AddRange(character1, character2);
+            Characters.AddRange(character1, character2, character3, character4);
 
             SaveChanges();
         }
