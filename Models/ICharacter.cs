@@ -14,6 +14,10 @@ namespace W09.Models
 
         public int Health { get; set; }
 
+        public int Defense { get; set; }
+
+        public int Strength { get; set; }
+
         void Attack(ICharacter target);
     }
 }

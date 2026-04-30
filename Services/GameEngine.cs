@@ -8,7 +8,7 @@ public class GameEngine
 {
     private readonly GameContext _context;
 
-    Random random = new Random();
+    private readonly Random random = new Random();
 
 
     public GameEngine(GameContext context)

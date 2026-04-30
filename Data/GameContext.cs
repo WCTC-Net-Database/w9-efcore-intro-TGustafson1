@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using W09.Models;
 using W09.Models.Abilities;
+using W09.Models.Abilities.Monsters;
+using W09.Models.Abilities.Players;
 
 namespace W09.Data;
 
@@ -50,11 +52,47 @@ public class GameContext : DbContext
             var room1 = new Room { Name = "Entrance Hall", Description = "The main entry." };
             var room2 = new Room { Name = "Treasure Room", Description = "A room filled with treasures." };
 
-            var character1 = new Player{ Name = "Knight", Level = 1, Room = room1, Health = 16 };
-            var character2 = new Player { Name = "Wizard", Level = 2, Room = room2, Health = 12 };
+            var character1 = new Player
+            {
+                Name = "Knight",
+                Level = 1,
+                Room = room1,
+                Health = 16,
+                Strength = 8,
+                Defense = 6,
+                Experience = 0
+            };
+            var character2 = new Player
+            {
+                Name = "Wizard",
+                Level = 2,
+                Room = room2,
+                Health = 12,
+                Strength = 3,
+                Defense = 2,
+                Experience = 100
+            };
 
-            var character3 = new Monster { Name = "Goblin Grunt", Level = 1, Room = room1, Health = 8 };
-            var character4 = new Monster { Name = "Goblin Shaman", Level = 2, Room = room2, Health = 10 };
+            var character3 = new Monster
+            {
+                Name = "Goblin Grunt",
+                Level = 1,
+                Room = room1,
+                Health = 8,
+                Strength = 4,
+                Defense = 1,
+                AggressionLevel = 5
+            };
+            var character4 = new Monster
+            {
+                Name = "Goblin Shaman",
+                Level = 2,
+                Room = room2,
+                Health = 10,
+                Strength = 2,
+                Defense = 3,
+                AggressionLevel = 8
+            };
 
             Rooms.AddRange(room1, room2);
             Characters.AddRange(character1, character2, character3, character4);

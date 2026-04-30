@@ -4,18 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace W09.Models.Abilities
+namespace W09.Models.Abilities.Monsters
 {
-    public class PlayerAbility : Ability
+    public class MonsterAbility : Ability
     {
-        public int Kick { get; set; }
+        public int AbilityLevel { get; set; }
 
         public override void Activate(Character user, Character target)
         {
             Console.WriteLine($"{user.Name} uses {Name} on {target.Name}!");
-            Console.WriteLine($"/t{Description}");
-            Console.WriteLine($"/t{target.Name} is pushed back {Kick} feet!");
+            Console.WriteLine($"/t{target.Name} is hit by a level {AbilityLevel} {Name}!");
         }
-
     }
 }

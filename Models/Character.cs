@@ -10,6 +10,10 @@ public abstract class Character : ICharacter
 
     public int Health { get; set; }
 
+    public int Defense { get; set; }
+
+    public int Strength { get; set; }
+
     // Foreign key to Room
     public int RoomId { get; set; }
 

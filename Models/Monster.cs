@@ -13,8 +13,9 @@ namespace W09.Models
         public override void Attack(ICharacter target)
         {
             Console.WriteLine($"{Name} lunges at {target.Name} with ferocity!");
-            target.Health -= 3;
-            Console.WriteLine($"{target.Name} takes 3 damage and has {target.Health} health left.");
+            int damage = Strength + 3 - target.Defense;
+            target.Health -= damage;
+            Console.WriteLine($"{target.Name} takes {damage} damage and has {target.Health} health left.");
         }
     }
 }

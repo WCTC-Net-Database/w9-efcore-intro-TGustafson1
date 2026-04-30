@@ -10,30 +10,57 @@ namespace W09.Services
 {
     public class CombatEngine
     {
-        public void StartCombat(Player player, Monster goblin)
+
+        private readonly Random _random = new Random();
+
+        public void StartCombat(Player player, Monster monster)
         {
             bool combatEnded = false;
 
             while (!combatEnded)
             {
+
                 // Player's turn
                 Console.WriteLine("Player's turn:");
-                player.Attack(goblin);
-                if (goblin.Health <= 0)
+                TakeTurn(player, monster);
+                if (monster.Health <= 0)
                 {
-                    Console.WriteLine($"{goblin.Name} defeated! You win!");
+                    Console.WriteLine($"{monster.Name} defeated! You win!");
                     combatEnded = true;
                     continue;
                 }
-                // Goblin's turn
-                Console.WriteLine($"{goblin.Name}'s turn:");
-                goblin.Attack(player);
+
+                // Monster's turn
+                Console.WriteLine($"{monster.Name}'s turn:");
+                TakeTurn(monster, player);
                 if (player.Health <= 0)
                 {
-                    Console.WriteLine($"You have been defeated by {goblin.Name}. Game over.");
+                    Console.WriteLine($"You have been defeated by {monster.Name}. Game over.");
                     combatEnded = true;
                 }
+
             }
+        }
+
+        public void TakeTurn(Character attacker, Character defender)
+        {
+            int abilityChance = 30;
+
+            int roll = _random.Next(1, 101);
+
+            if (roll <= abilityChance && attacker.Abilities.Any())
+            {
+                int abilityIndex = _random.Next(attacker.Abilities.Count);
+                var ability = attacker.Abilities.ElementAt(abilityIndex);
+                Console.WriteLine($"{attacker.Name} uses {ability.Name}!");
+                attacker.UseAbility(ability, defender);
+            }
+            else
+            {
+                Console.WriteLine($"{attacker.Name} attacks!");
+                attacker.Attack(defender);
+            }
+
         }
     }
 }
