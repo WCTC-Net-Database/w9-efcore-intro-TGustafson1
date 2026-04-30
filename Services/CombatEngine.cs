@@ -10,7 +10,7 @@ namespace W09.Services
 {
     public class CombatEngine
     {
-        public void StartCombat(Player player, Goblin goblin)
+        public void StartCombat(Player player, Monster goblin)
         {
             bool combatEnded = false;
 

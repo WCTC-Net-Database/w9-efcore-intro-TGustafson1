@@ -26,12 +26,12 @@ public class GameContext : DbContext
         modelBuilder.Entity<Character>()
             .HasDiscriminator<string>("Discriminator")
             .HasValue<Player>("Player")
-            .HasValue<Goblin>("Goblin");
+            .HasValue<Monster>("Goblin");
 
         //TPH for Abilities
         modelBuilder.Entity<Ability>()
             .HasDiscriminator<string>("Discriminator")
-            .HasValue<GoblinAbility>("GoblinAbility")
+            .HasValue<MonsterAbility>("GoblinAbility")
             .HasValue<PlayerAbility>("PlayerAbility");
 
         // many-to-many between Characters and Abilities
@@ -53,8 +53,8 @@ public class GameContext : DbContext
             var character1 = new Player{ Name = "Knight", Level = 1, Room = room1, Health = 16 };
             var character2 = new Player { Name = "Wizard", Level = 2, Room = room2, Health = 12 };
 
-            var character3 = new Goblin { Name = "Goblin Grunt", Level = 1, Room = room1, Health = 8 };
-            var character4 = new Goblin { Name = "Goblin Shaman", Level = 2, Room = room2, Health = 10 };
+            var character3 = new Monster { Name = "Goblin Grunt", Level = 1, Room = room1, Health = 8 };
+            var character4 = new Monster { Name = "Goblin Shaman", Level = 2, Room = room2, Health = 10 };
 
             Rooms.AddRange(room1, room2);
             Characters.AddRange(character1, character2, character3, character4);

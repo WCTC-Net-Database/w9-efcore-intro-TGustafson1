@@ -75,7 +75,7 @@ public class GameEngine
         if (characters.Any())
         {
             Console.WriteLine("\nCharacters:");
-            foreach (var character in characters)
+            foreach (var character in characters.Where(c => c is Player))
             {
                 Console.WriteLine($"Character ID: {character.Id}, Name: {character.Name}, Level: {character.Level}, Room ID: {character.RoomId}");
             }
@@ -148,7 +148,7 @@ public class GameEngine
 
         Console.WriteLine($"Welcome, {selectedPlayer.Name}! Your adventure begins in the {selectedPlayer.Room?.Name}.");
 
-        List<Goblin> goblins = _context.Characters.Where(c => c is Goblin).Cast<Goblin>().ToList();
+        List<Monster> goblins = _context.Characters.Where(c => c is Monster).Cast<Monster>().ToList();
 
         CombatEngine combat = new CombatEngine();
 
