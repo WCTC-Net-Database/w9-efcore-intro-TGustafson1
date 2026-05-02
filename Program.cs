@@ -24,7 +24,7 @@ class Program
         // Resolving circular dependency - in my head it makes the most sense to have the engine rely on context, and menu/output rely on engine
 
         var menu = serviceProvider.GetService<Menu>();
-
+        
         menu?.Show();
     }
 }

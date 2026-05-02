@@ -9,11 +9,12 @@ namespace W09.Models.Abilities
     public abstract class Ability
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = "Default Ability";
 
-        public string Description { get; set; }
+        public string Description { get; set; } = "Default description";
 
-        public virtual ICollection<Character> Characters { get; set; } = new List<Character>();
+        public ICollection<Character> Characters { get; set; } = new List<Character>();
+        public int AbilityLevel { get; set; }
 
         public abstract void Activate(Character user, Character target);
     }

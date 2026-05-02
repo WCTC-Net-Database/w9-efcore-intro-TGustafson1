@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace W09.Models.Abilities.Players
+namespace W09.Models.Abilities
 {
     public class PlayerAbility : Ability
     {
-        public int AbilityLevel { get; set; }
         public int Uses { get; set;  }
 
         public override void Activate(Character user, Character target)
@@ -20,8 +19,8 @@ namespace W09.Models.Abilities.Players
             }
             if (Uses > 0)
             {
-                Console.WriteLine($"{user.Name} uses {Name} on {target.Name}!");
-                Console.WriteLine($"/t{target.Name} is pushed back {AbilityLevel} feet!");
+                Console.WriteLine($"{Name} {Description}");
+                Uses--;
             }
         }
 

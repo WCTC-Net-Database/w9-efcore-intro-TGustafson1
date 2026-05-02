@@ -17,13 +17,18 @@ namespace W09.Services
         {
             bool combatEnded = false;
 
+            //TODO: Ensure stats are initializing properly.
+            InitializeStats(player, monster);
+
             while (!combatEnded)
             {
-
+                //TODO: Add more detailed combat log, such as damage dealt, abilities used, and remaining health after each turn
+                
+                Console.WriteLine();
                 // Player's turn
                 Console.WriteLine("Player's turn:");
                 TakeTurn(player, monster);
-                if (monster.Health <= 0)
+                if (monster.TemporaryHealth <= 0)
                 {
                     Console.WriteLine($"{monster.Name} defeated! You win!");
                     combatEnded = true;
@@ -33,12 +38,20 @@ namespace W09.Services
                 // Monster's turn
                 Console.WriteLine($"{monster.Name}'s turn:");
                 TakeTurn(monster, player);
-                if (player.Health <= 0)
+                if (player.TemporaryHealth <= 0)
                 {
                     Console.WriteLine($"You have been defeated by {monster.Name}. Game over.");
                     combatEnded = true;
                 }
 
+                if (combatEnded)
+                {
+                    //TODO: Update to "save" player data as needed, such as experience points or permanent stat changes
+                    //TODO: Grant experience points based on aggression level of monster defeated
+                    player.TemporaryHealth = player.Health;
+                    player.TemporaryDefense = player.Defense;
+                    player.TemporaryStrength = player.Strength;
+                }
             }
         }
 
@@ -52,7 +65,6 @@ namespace W09.Services
             {
                 int abilityIndex = _random.Next(attacker.Abilities.Count);
                 var ability = attacker.Abilities.ElementAt(abilityIndex);
-                Console.WriteLine($"{attacker.Name} uses {ability.Name}!");
                 attacker.UseAbility(ability, defender);
             }
             else
@@ -61,6 +73,18 @@ namespace W09.Services
                 attacker.Attack(defender);
             }
 
+            Console.WriteLine();
+        }
+
+        public void InitializeStats(Character character, Monster monster)
+        {
+            character.TemporaryHealth = character.Health;
+            character.TemporaryDefense = character.Defense;
+            character.TemporaryStrength = character.Strength;
+
+            monster.TemporaryHealth = monster.Health;
+            monster.TemporaryDefense = monster.Defense;
+            monster.TemporaryStrength = monster.Strength;
         }
     }
 }

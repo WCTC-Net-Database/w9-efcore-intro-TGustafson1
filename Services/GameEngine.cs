@@ -148,11 +148,13 @@ public class GameEngine
 
         Console.WriteLine($"Welcome, {selectedPlayer.Name}! Your adventure begins in the {selectedPlayer.Room?.Name}.");
 
-        List<Monster> goblins = _context.Characters.Where(c => c is Monster).Cast<Monster>().ToList();
+        //TODO: Hack fix for testing combat, review later for better way to select monsters for combat
+
+        List<Monster> monsters = _context.Characters.Where(c => c is Monster).Cast<Monster>().ToList();
 
         CombatEngine combat = new CombatEngine();
 
-        var enemy = goblins[random.Next(2)];
+        var enemy = monsters[random.Next(2)];
 
         combat.StartCombat(selectedPlayer, enemy);
     }

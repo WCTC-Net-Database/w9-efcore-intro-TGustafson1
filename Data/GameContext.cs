@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using W09.Models;
 using W09.Models.Abilities;
-using W09.Models.Abilities.Monsters;
-using W09.Models.Abilities.Players;
 
 namespace W09.Data;
 
@@ -28,12 +26,12 @@ public class GameContext : DbContext
         modelBuilder.Entity<Character>()
             .HasDiscriminator<string>("Discriminator")
             .HasValue<Player>("Player")
-            .HasValue<Monster>("Goblin");
+            .HasValue<Monster>("Monster");
 
         //TPH for Abilities
         modelBuilder.Entity<Ability>()
             .HasDiscriminator<string>("Discriminator")
-            .HasValue<MonsterAbility>("GoblinAbility")
+            .HasValue<MonsterAbility>("MonsterAbility")
             .HasValue<PlayerAbility>("PlayerAbility");
 
         // many-to-many between Characters and Abilities
@@ -51,6 +49,17 @@ public class GameContext : DbContext
         {
             var room1 = new Room { Name = "Entrance Hall", Description = "The main entry." };
             var room2 = new Room { Name = "Treasure Room", Description = "A room filled with treasures." };
+
+            Rooms.AddRange(room1, room2);
+
+
+            var heckle = new MonsterAbility
+            {
+                Name = "Heckle",
+                Description = "taunts the target, reducing their defensive power.",
+                AbilityLevel = 1,
+                Characters = { }
+            };
 
             var character1 = new Player
             {
@@ -81,7 +90,8 @@ public class GameContext : DbContext
                 Health = 8,
                 Strength = 4,
                 Defense = 1,
-                AggressionLevel = 5
+                AggressionLevel = 5,
+                Abilities = {}
             };
             var character4 = new Monster
             {
@@ -91,10 +101,10 @@ public class GameContext : DbContext
                 Health = 10,
                 Strength = 2,
                 Defense = 3,
-                AggressionLevel = 8
+                AggressionLevel = 8,
+                Abilities = {}
             };
 
-            Rooms.AddRange(room1, room2);
             Characters.AddRange(character1, character2, character3, character4);
 
             SaveChanges();

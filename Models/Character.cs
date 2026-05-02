@@ -1,6 +1,7 @@
 ﻿namespace W09.Models;
 
 using Models.Abilities;
+using System.ComponentModel.DataAnnotations.Schema;
 
 public abstract class Character : ICharacter
 {
@@ -9,10 +10,18 @@ public abstract class Character : ICharacter
     public int Level { get; set; }
 
     public int Health { get; set; }
+    [NotMapped]
+    public int TemporaryHealth { get; set; }
 
     public int Defense { get; set; }
 
+    [NotMapped]
+    public int TemporaryDefense { get; set; }
+
     public int Strength { get; set; }
+
+    [NotMapped]
+    public int TemporaryStrength { get; set; }
 
     // Foreign key to Room
     public int RoomId { get; set; }
@@ -24,7 +33,7 @@ public abstract class Character : ICharacter
 
     public virtual void Attack(ICharacter target)
     {
-        Console.WriteLine($"{Name} attacks {target.Name}!");
+        Console.WriteLine($"{Name} tries to attack {target.Name}, but fails due to not being implemented!");
     }
 
     public virtual void UseAbility(Ability ability, ICharacter target)
