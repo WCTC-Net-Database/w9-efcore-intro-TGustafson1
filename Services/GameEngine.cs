@@ -125,6 +125,7 @@ public class GameEngine
 
     public void ChooseAdventurer()
     {
+        //TODO: Fix so that it just iterates over players (1,2,3...) rather than using player.ID
         Console.WriteLine("Choose which character to start the adventure with: ");
         foreach (var player in _context.Characters.Where(c => c is Player))
         {

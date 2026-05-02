@@ -12,6 +12,10 @@ namespace W09.Models.Abilities
         {
             Console.WriteLine($"{user.Name} uses {Name} on {target.Name}!");
             Console.WriteLine($"/t{Name} {Description}");
+
+            target.TemporaryHealth -= HealthModifier;
+            target.TemporaryDefense -= DefenseModifier;
+            target.TemporaryStrength -= StrengthModifier;
         }
     }
 }

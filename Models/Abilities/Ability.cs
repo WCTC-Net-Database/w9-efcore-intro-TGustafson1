@@ -16,6 +16,10 @@ namespace W09.Models.Abilities
         public ICollection<Character> Characters { get; set; } = new List<Character>();
         public int AbilityLevel { get; set; }
 
+        public int DefenseModifier { get; set; } = 0;
+        public int StrengthModifier { get; set; } = 0;
+        public int HealthModifier { get; set; } = 0;
+
         public abstract void Activate(Character user, Character target);
     }
 }

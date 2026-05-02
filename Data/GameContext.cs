@@ -58,6 +58,7 @@ public class GameContext : DbContext
                 Name = "Heckle",
                 Description = "taunts the target, reducing their defensive power.",
                 AbilityLevel = 1,
+                DefenseModifier = -1,
                 Characters = { }
             };
 
@@ -67,19 +68,19 @@ public class GameContext : DbContext
                 Level = 1,
                 Room = room1,
                 Health = 16,
-                Strength = 8,
-                Defense = 6,
+                Strength = 5,
+                Defense = 3,
                 Experience = 0
             };
             var character2 = new Player
             {
                 Name = "Wizard",
-                Level = 2,
+                Level = 1,
                 Room = room2,
                 Health = 12,
                 Strength = 3,
                 Defense = 2,
-                Experience = 100
+                Experience = 0
             };
 
             var character3 = new Monster

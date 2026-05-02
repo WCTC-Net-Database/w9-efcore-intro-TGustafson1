@@ -15,13 +15,12 @@ namespace W09.Models
 
         public override void Attack(ICharacter target)
         {
-            //TODO: Double check correct damage calculations
             Console.WriteLine($"{Name} lunges at {target.Name} with ferocity!");
             int monsterStrength = Strength + TemporaryStrength;
             int targetDefense = target.Defense + target.TemporaryDefense;
             int damage = 3 + monsterStrength - targetDefense;
-            target.TemporaryHealth -= damage;
-            Console.WriteLine($"{target.Name} takes {damage} damage and has {Math.Max(target.TemporaryHealth, 0)} health left.");
+            target.TemporaryHealth -= Math.Max(damage, 0);
+            Console.WriteLine($"{target.Name} takes {Math.Max(damage, 0)} damage and has {Math.Max(target.TemporaryHealth, 0)} health left.");
         }
     }
 }
