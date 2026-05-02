@@ -107,8 +107,7 @@ namespace W09.Services
 
         public void MonsterTurn(Character attacker, Character defender)
         {
-            //TODO: Change chance back from 100 to 30 or 50ish
-            int abilityChance = 100;
+            int abilityChance = 50;
 
             int roll = _random.Next(1, 101);
 

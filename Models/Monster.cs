@@ -13,12 +13,11 @@ namespace W09.Models
 
         public new ICollection<MonsterAbility> Abilities { get; set; } = new List<MonsterAbility>();
 
-        public override void Attack(ICharacter target)
+        public void Attack(Player target)
         {
             Console.WriteLine($"{Name} lunges at {target.Name} with ferocity!");
-            int monsterStrength = Strength + TemporaryStrength;
-            int targetDefense = target.Defense + target.TemporaryDefense;
-            int damage = 3 + monsterStrength - targetDefense;
+            int targetDefense = target.GetTotalDefense();
+            int damage = 2 + TemporaryStrength - targetDefense;
             target.TemporaryHealth -= Math.Max(damage, 0);
             Console.WriteLine($"{target.Name} takes {Math.Max(damage, 0)} damage and has {Math.Max(target.TemporaryHealth, 0)} health left.");
         }

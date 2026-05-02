@@ -24,7 +24,7 @@ public abstract class Character : ICharacter
     public int TemporaryStrength { get; set; }
 
     // Foreign key to Room
-    public int RoomId { get; set; }
+    public int? RoomId { get; set; }
 
     // Navigation property to Room
     public virtual Room Room { get; set; }
