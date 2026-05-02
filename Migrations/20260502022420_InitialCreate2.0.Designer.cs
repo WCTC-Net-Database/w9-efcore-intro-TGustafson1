@@ -11,8 +11,8 @@ using W09.Data;
 namespace W09.Migrations
 {
     [DbContext(typeof(GameContext))]
-    [Migration("20260423214314_AddAbilitiesTable")]
-    partial class AddAbilitiesTable
+    [Migration("20260502022420_InitialCreate2.0")]
+    partial class InitialCreate20
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,22 +47,34 @@ namespace W09.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AbilityLevel")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DefenseModifier")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
+
+                    b.Property<int>("HealthModifier")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("StrengthModifier")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Ability");
+                    b.ToTable("Abilities");
 
                     b.HasDiscriminator().HasValue("Ability");
 
@@ -77,10 +89,16 @@ namespace W09.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Defense")
+                        .HasColumnType("int");
+
                     b.Property<string>("Discriminator")
                         .IsRequired()
                         .HasMaxLength(13)
                         .HasColumnType("nvarchar(13)");
+
+                    b.Property<int>("Health")
+                        .HasColumnType("int");
 
                     b.Property<int>("Level")
                         .HasColumnType("int");
@@ -90,6 +108,9 @@ namespace W09.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Strength")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -124,34 +145,31 @@ namespace W09.Migrations
                     b.ToTable("Rooms");
                 });
 
-            modelBuilder.Entity("W09.Models.Abilities.GoblinAbility", b =>
+            modelBuilder.Entity("W09.Models.Abilities.MonsterAbility", b =>
                 {
                     b.HasBaseType("W09.Models.Abilities.Ability");
 
-                    b.Property<int>("Heckle")
-                        .HasColumnType("int");
-
-                    b.HasDiscriminator().HasValue("GoblinAbility");
+                    b.HasDiscriminator().HasValue("MonsterAbility");
                 });
 
             modelBuilder.Entity("W09.Models.Abilities.PlayerAbility", b =>
                 {
                     b.HasBaseType("W09.Models.Abilities.Ability");
 
-                    b.Property<int>("Kick")
+                    b.Property<int>("Uses")
                         .HasColumnType("int");
 
                     b.HasDiscriminator().HasValue("PlayerAbility");
                 });
 
-            modelBuilder.Entity("W09.Models.Goblin", b =>
+            modelBuilder.Entity("W09.Models.Monster", b =>
                 {
                     b.HasBaseType("W09.Models.Character");
 
                     b.Property<int>("AggressionLevel")
                         .HasColumnType("int");
 
-                    b.HasDiscriminator().HasValue("Goblin");
+                    b.HasDiscriminator().HasValue("Monster");
                 });
 
             modelBuilder.Entity("W09.Models.Player", b =>

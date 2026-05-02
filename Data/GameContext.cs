@@ -45,13 +45,15 @@ public class GameContext : DbContext
     // Seed Method
     public void Seed()
     {
+
+        SaveChanges();
+
         if (!Rooms.Any())
         {
             var room1 = new Room { Name = "Entrance Hall", Description = "The main entry." };
             var room2 = new Room { Name = "Treasure Room", Description = "A room filled with treasures." };
 
             Rooms.AddRange(room1, room2);
-
 
             var heckle = new MonsterAbility
             {
@@ -61,6 +63,9 @@ public class GameContext : DbContext
                 DefenseModifier = -1,
                 Characters = { }
             };
+
+            Abilities.AddRange(heckle);
+
 
             var character1 = new Player
             {
@@ -92,7 +97,7 @@ public class GameContext : DbContext
                 Strength = 4,
                 Defense = 1,
                 AggressionLevel = 5,
-                Abilities = {}
+                Abilities = { }
             };
             var character4 = new Monster
             {
@@ -103,7 +108,7 @@ public class GameContext : DbContext
                 Strength = 2,
                 Defense = 3,
                 AggressionLevel = 8,
-                Abilities = {}
+                Abilities = { }
             };
 
             Characters.AddRange(character1, character2, character3, character4);

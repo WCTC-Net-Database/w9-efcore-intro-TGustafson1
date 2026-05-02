@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using W09.Data;
 using W09.Models;
+using W09.Models.Abilities;
 
 namespace W09.Services;
 
@@ -14,6 +15,16 @@ public class GameEngine
     public GameEngine(GameContext context)
     {
         _context = context;
+
+        //TODO: Find the right place to put this, only works specifically for goblin heckle at the moment
+        foreach (var monster in _context.Characters.Where(c => c is Monster).ToList())
+        {
+            if (monster.Abilities.Count == 0)
+            {
+                monster.Abilities.Add(_context.Abilities.Where(c => c.Name == "Heckle").FirstOrDefault() as MonsterAbility);
+                _context.SaveChanges();
+            }
+        }
 
     }
 

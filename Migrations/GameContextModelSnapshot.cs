@@ -47,6 +47,9 @@ namespace W09.Migrations
                     b.Property<int>("AbilityLevel")
                         .HasColumnType("int");
 
+                    b.Property<int>("DefenseModifier")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -56,9 +59,15 @@ namespace W09.Migrations
                         .HasMaxLength(21)
                         .HasColumnType("nvarchar(21)");
 
+                    b.Property<int>("HealthModifier")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StrengthModifier")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
