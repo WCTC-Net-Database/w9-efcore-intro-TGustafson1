@@ -20,12 +20,6 @@ public class GameContext : DbContext
     {
     }
 
-    // OLD method of setting up DBContext with OnConfiguring, now we use DI in Startup.cs
-    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //{
-    //    optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=StartingEFCore;Trusted_Connection=True;");
-    //}
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         //TPH for Characters
@@ -99,7 +93,8 @@ public class GameContext : DbContext
 
         base.OnModelCreating(modelBuilder);
     }
-    // Seed Method
+
+    //TODO: Set up seed to be a menu option, clearing database and re-seeding a fresh world.
     public void Seed()
     {
 

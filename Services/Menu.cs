@@ -30,7 +30,7 @@ public class Menu
             switch (choice)
             {
                 case "1":
-                    _gameEngine.ChooseAdventurer();
+                    _gameEngine.BeginAdventure();
                     break;
                 case "2":
                     _gameEngine.DisplayRooms();

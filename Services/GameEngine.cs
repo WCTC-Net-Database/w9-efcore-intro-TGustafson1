@@ -8,26 +8,42 @@ namespace W09.Services;
 public class GameEngine
 {
     private readonly GameContext _context;
+    private readonly CombatEngine _combat;
 
     private readonly Random random = new Random();
 
 
-    public GameEngine(GameContext context)
+    public GameEngine(GameContext context, CombatEngine combat)
     {
         _context = context;
+        _combat = combat;
 
         //TODO: Find the right place to put this, only works specifically for goblin heckle at the moment
-        foreach (var monster in _context.Characters.Where(c => c is Monster).ToList())
-        {
-            if (monster.Abilities.Count == 0)
-            {
-                monster.Abilities.Add(_context.Abilities.Where(c => c.Name == "Heckle").FirstOrDefault() as MonsterAbility);
-                _context.SaveChanges();
-            }
-        }
+        //foreach (var monster in _context.Characters.Where(c => c is Monster).ToList())
+        //{
+        //    if (monster.Abilities.Count == 0)
+        //    {
+        //        monster.Abilities.Add(_context.Abilities.Where(c => c.Name == "Heckle").FirstOrDefault() as MonsterAbility);
+        //        _context.SaveChanges();
+        //    }
+        //}
 
     }
 
+    public void BeginAdventure()
+    {
+        //Main game logic goes here, using other methods to handle specific actions like moving, combat, etc.
+
+        var player = ChooseAdventurer();
+        bool playing = true;
+
+        while (playing)
+        {
+            DisplayCurrentRoom(player);
+        }
+
+
+    }
     public void AddRoom()
     {
         Console.Write("Enter room name: ");
@@ -68,14 +84,14 @@ public class GameEngine
     }
     public void DisplayRooms()
     {
-        var rooms = _context.Rooms.Include(r => r.Characters).ToList();
+        var rooms = _context.Rooms.Include(r => r.Players).ToList();
 
         foreach (var room in rooms)
         {
             Console.WriteLine($"Room: {room.Name} - {room.Description}");
-            foreach (var character in room.Characters)
+            foreach (var player in room.Players)
             {
-                Console.WriteLine($"    Character: {character.Name}, Level: {character.Level}");
+                Console.WriteLine($"    Character: {player.Name}, Level: {player.Level}");
             }
         }
     }
@@ -134,7 +150,7 @@ public class GameEngine
         }
     }
 
-    public void ChooseAdventurer()
+    public Player ChooseAdventurer()
     {
         //TODO: Fix so that it just iterates over players (1,2,3...) rather than using player.ID
         Console.WriteLine("Choose which character to start the adventure with: ");
@@ -155,19 +171,86 @@ public class GameEngine
         else
         {
             Console.WriteLine("Character not found.");
-            return;
+            return null;
         }
 
         Console.WriteLine($"Welcome, {selectedPlayer.Name}! Your adventure begins in the {selectedPlayer.Room?.Name}.");
+        return selectedPlayer;
 
         //TODO: Hack fix for testing combat, review later for better way to select monsters for combat
 
-        List<Monster> monsters = _context.Characters.Where(c => c is Monster).Cast<Monster>().ToList();
+        //List<Monster> monsters = _context.Characters.Where(c => c is Monster).Cast<Monster>().ToList();
 
-        CombatEngine combat = new CombatEngine();
+        //CombatEngine combat = new CombatEngine();
 
-        var enemy = monsters[random.Next(2)];
+        //var enemy = monsters[random.Next(2)];
 
-        combat.StartCombat(selectedPlayer, enemy);
+        //combat.StartCombat(selectedPlayer, enemy);
+    }
+
+    public void MovePlayer(Player player, string direction)
+    {
+        var currentRoom = _context.Rooms
+            .Include(r => r.NorthRoom)
+            .Include(r => r.SouthRoom)
+            .Include(r => r.EastRoom)
+            .Include(r => r.WestRoom)
+            .FirstOrDefault(r => r.Id == player.RoomId);
+
+        if (currentRoom == null)
+        {
+            Console.WriteLine("Current room not found.");
+            return;
+        }
+
+        Room nextRoom = direction.ToUpper() switch
+        {
+            "N" => currentRoom.NorthRoom,
+            "S" => currentRoom.SouthRoom,
+            "E" => currentRoom.EastRoom,
+            "W" => currentRoom.WestRoom,
+            _ => null
+        };
+
+        if (nextRoom == null)
+        {
+            Console.WriteLine("You can't move in that direction.");
+            return;
+        }
+
+        player.RoomId = nextRoom.Id;
+        _context.SaveChanges();
+
+        Console.WriteLine($"You move {direction} to {nextRoom.Name}.");
+        Console.WriteLine(nextRoom.Description);
+    }
+
+    public void DisplayCurrentRoom(Player player)
+    {
+        var room = _context.Rooms
+            .Include(r => r.Players)
+            .Include(r => r.Monsters)
+            .FirstOrDefault(r => r.Id == player.RoomId);
+
+        if (room == null)
+        {
+            Console.WriteLine("Current room not found.");
+            return;
+        }
+
+        Console.WriteLine($"\n==== {room.Name} ===="); 
+        Console.WriteLine(room.Description);
+
+        var exits = new List<string>();
+        if (room.NorthRoomId.HasValue) exits.Add("North");
+        if (room.SouthRoomId.HasValue) exits.Add("South");
+        if (room.EastRoomId.HasValue) exits.Add("East");
+        if (room.WestRoomId.HasValue) exits.Add("West");
+        Console.WriteLine($"Exits: {string.Join(", ", exits)}");
+
+        if (room.Monsters.Any())
+        {
+            Console.WriteLine($"Monsters here: {string.Join(", ", room.Monsters.Select(m => m.Name))}");
+        }
     }
 }
