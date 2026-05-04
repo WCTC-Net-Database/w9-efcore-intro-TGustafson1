@@ -34,6 +34,12 @@ public class GameContext : DbContext
             .HasValue<MonsterAbility>("MonsterAbility")
             .HasValue<PlayerAbility>("PlayerAbility");
 
+        //TPH for Items
+        modelBuilder.Entity<Item>()
+            .HasDiscriminator<string>("Discriminator")
+            .HasValue<Weapon>("Weapon")
+            .HasValue<Armor>("Armor");
+
         // many-to-many between Characters and Abilities
         modelBuilder.Entity<Character>()
             .HasMany(c => c.Abilities)
@@ -98,8 +104,6 @@ public class GameContext : DbContext
     public void Seed()
     {
 
-        SaveChanges();
-
         if (!Rooms.Any())
         {
             var room1 = new Room { Name = "Entrance Hall", Description = "The main entry." };
@@ -113,10 +117,8 @@ public class GameContext : DbContext
                 Description = "taunts the target, reducing their defensive power.",
                 AbilityLevel = 1,
                 DefenseModifier = -1,
-                Characters = { }
+                Characters = new List<Character>()
             };
-
-            Abilities.AddRange(heckle);
 
 
             var character1 = new Player
@@ -149,7 +151,7 @@ public class GameContext : DbContext
                 Strength = 4,
                 Defense = 1,
                 AggressionLevel = 5,
-                Abilities = { }
+                Abilities = new List<Ability> { heckle }
             };
             var character4 = new Monster
             {
@@ -160,12 +162,16 @@ public class GameContext : DbContext
                 Strength = 2,
                 Defense = 3,
                 AggressionLevel = 8,
-                Abilities = { }
+                Abilities = new List<Ability> { heckle }
             };
 
             Characters.AddRange(character1, character2, character3, character4);
 
             SaveChanges();
+
+            Console.WriteLine("\nGame world seeded successfully.\n");
+
+
         }
     }
 }

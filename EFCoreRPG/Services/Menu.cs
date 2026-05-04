@@ -1,4 +1,4 @@
-﻿namespace W09.Services;
+﻿namespace EFCoreRPG.Services;
 
 public class Menu
 {
@@ -58,5 +58,4 @@ public class Menu
             }
         }
     }
-
 }

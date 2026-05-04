@@ -18,14 +18,14 @@ namespace EFCoreRPGEntities.Models
 
         public int GetTotalAttack()
         {
-            int baseAttack = Level * 2; 
-            int weaponBonus = Equipment?.Weapon?.Attack ?? 0;
+            int baseAttack = Level * 2;
+            int weaponBonus = Equipment?.Weapon is Weapon weapon ? weapon.AttackPower : 0;
             return baseAttack + weaponBonus + TemporaryStrength;
         }
 
         public int GetTotalDefense()
         {
-            return (Equipment?.Armor?.Defense ?? 0) + TemporaryDefense;
+            return (Equipment?.Armor is Armor armor ? armor.Defense : 0) + TemporaryDefense;
         }
 
         public override void Attack(ICharacter target)

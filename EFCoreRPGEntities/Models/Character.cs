@@ -10,6 +10,7 @@ public abstract class Character : ICharacter
     public int Level { get; set; }
 
     public int Health { get; set; }
+
     [NotMapped]
     public int TemporaryHealth { get; set; }
 

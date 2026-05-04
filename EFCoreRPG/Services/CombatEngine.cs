@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using EFCoreRPGEntities.Data;
 using EFCoreRPGEntities.Models;
 
-namespace W09.Services
+namespace EFCoreRPG.Services
 {
     public class CombatEngine
     {

@@ -6,17 +6,15 @@ using System.Threading.Tasks;
 
 namespace EFCoreRPGEntities.Models.Items
 {
-    public class Item
-    {   public int Id { get; set; }
+    public abstract class Item
+    {   
+        public int Id { get; set; }
         public string Name { get; set; }
-        public string Type { get; set; }
-
-        public int Attack {  get; set; }
-
-        public int Defense { get; set; }
     
         public int Weight { get; set; }
 
         public int Value { get; set; }
+
+        public abstract void Use(Player player);
     }
 }

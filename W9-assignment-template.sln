@@ -5,7 +5,7 @@ VisualStudioVersion = 18.5.11723.231
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFCoreRPGEntities", "EFCoreRPGEntities\EFCoreRPGEntities.csproj", "{06CA9C05-91D3-3D02-68F5-88B20A799EB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "W9-assignment-template", "EFCoreRPG\W9-assignment-template.csproj", "{0F4A845A-2BFC-8F09-56B9-B166838BD7DD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFCoreRPG", "EFCoreRPG\EFCoreRPG.csproj", "{0F4A845A-2BFC-8F09-56B9-B166838BD7DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using EFCoreRPGEntities.Data;
-using W09.Services;
+using EFCoreRPG.Services;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using EFCoreRPGEntities.Helpers;
 
-namespace W09
+namespace EFCoreRPG
 {
     public static class Startup
     {

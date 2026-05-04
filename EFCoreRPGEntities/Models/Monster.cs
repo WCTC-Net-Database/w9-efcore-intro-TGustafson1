@@ -11,8 +11,6 @@ namespace EFCoreRPGEntities.Models
     {
         public int AggressionLevel { get; set; }
 
-        public new ICollection<MonsterAbility> Abilities { get; set; } = new List<MonsterAbility>();
-
         public void Attack(Player target)
         {
             Console.WriteLine($"{Name} lunges at {target.Name} with ferocity!");

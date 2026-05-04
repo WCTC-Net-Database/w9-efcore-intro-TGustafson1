@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using EFCoreRPGEntities.Data;
-using W09.Services;
+using EFCoreRPG.Services;
 
-namespace W09;
+namespace EFCoreRPG;
 
 class Program
 {
