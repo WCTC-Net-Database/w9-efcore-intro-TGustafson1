@@ -100,7 +100,6 @@ public class GameContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
-    //TODO: Set up seed to be a menu option, clearing database and re-seeding a fresh world.
     public void Seed()
     {
 

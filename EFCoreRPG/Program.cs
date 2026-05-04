@@ -23,8 +23,8 @@ class Program
 
         // Resolving circular dependency
 
-        var menu = serviceProvider.GetService<Menu>();
+        var engine = serviceProvider.GetService<GameEngine>();
         
-        menu?.Show();
+        engine?.Start();
     }
 }

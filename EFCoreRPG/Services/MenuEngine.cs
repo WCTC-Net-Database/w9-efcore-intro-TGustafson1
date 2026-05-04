@@ -1,0 +1,46 @@
+﻿namespace EFCoreRPG.Services;
+
+public class MenuEngine
+{
+    public MenuEngine()
+    {
+    }
+
+    public string MainMenu()
+    {
+        Console.WriteLine("\n--- Game Menu ---");
+        Console.WriteLine("1. Start Adventure");
+        Console.WriteLine("2. Display Rooms");
+        Console.WriteLine("3. Display Characters");
+        Console.WriteLine("4. Add Room");
+        Console.WriteLine("5. Add Character");
+        Console.WriteLine("6. Find Character");
+        Console.WriteLine("7. Level Up Character");
+        Console.WriteLine("0. Exit");
+        Console.Write("Enter your choice: ");
+
+        var choice = Console.ReadLine();
+        Console.WriteLine();
+
+        return choice ?? " ";
+    }
+
+    public string AdventureMenu()
+    {
+        Console.WriteLine("\n--- Adventure Menu ---");
+        Console.WriteLine("1. Move to another room");
+        Console.WriteLine("2. Check inventory");
+        Console.WriteLine("3. View character stats");
+        Console.WriteLine("4. Rest to recover health");
+        Console.WriteLine("5. Exit adventure");
+        Console.Write("Enter your choice: ");
+        var choice = Console.ReadLine();
+        Console.WriteLine();
+        return choice ?? " ";
+    }
+
+    public string MovementMenu()
+    {
+        return "";
+    }
+}

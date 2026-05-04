@@ -9,29 +9,103 @@ public class GameEngine
 {
     private readonly GameContext _context;
     private readonly CombatEngine _combat;
+    private readonly MenuEngine _menu;
 
     private readonly Random random = new Random();
 
 
-    public GameEngine(GameContext context, CombatEngine combat)
+    public GameEngine(GameContext context, CombatEngine combat, MenuEngine menu)
     {
         _context = context;
         _combat = combat;
+        _menu = menu;
     }
 
+    public void Start()
+    {
+
+        while (true)
+        {
+            var choice = _menu.MainMenu();
+
+            switch (choice)
+            {
+                case "1":
+                    BeginAdventure();
+                    break;
+                case "2":
+                    DisplayRooms();
+                    break;
+                case "3":
+                    DisplayCharacters();
+                    break;
+                case "4":
+                    AddRoom();
+                    break;
+                case "5":
+                    AddCharacter();
+                    break;
+                case "6":
+                    FindCharacter();
+                    break;
+                case "7":
+                    LevelUpCharacter();
+                    break;
+                case "0":
+                    return;
+                default:
+                    Console.WriteLine("Invalid option, please try again.");
+                    break;
+            }
+        }        
+    }
     public void BeginAdventure()
     {
         //Main game logic goes here, using other methods to handle specific actions like moving, combat, etc.
 
-        var player = ChooseAdventurer();
         bool playing = true;
 
         while (playing)
         {
-            //TODO: Add more logic, possibly a menu of choices for the player to select from (move, check inventory, etc.)
+            var player = ChooseAdventurer();
+
             DisplayCurrentRoom(player);
 
-            playing = false; // Placeholder to end the loop after one iteration for testing purposes
+            while (true)
+            {
+                var choice = _menu.AdventureMenu();
+                switch (choice)
+                {
+                    case "1":
+                        //TODO: Set up map and room connections, then implement movement logic here
+                        Console.Write("Enter direction to move (N/S/E/W): ");
+                        var direction = Console.ReadLine();
+                        MovePlayer(player, direction);
+                        break;
+                    case "2":
+                        //TODO: Future inventory system to manage items and equipment. 
+                        Console.WriteLine("Inventory feature not implemented yet.");
+                        break;
+                    case "3":
+                        Console.WriteLine($"Character: {player.Name}, Level: {player.Level}, Health: {player.TemporaryHealth}");
+                        break;
+                    case "4":
+                        Console.WriteLine("Resting to recover health...");
+                        player.TemporaryHealth = player.Health; //TODO: Revisit healing per round idea
+                        _context.SaveChanges();
+                        Console.WriteLine("Health fully recovered!");
+                        break;
+                    case "5":
+                        Console.WriteLine("Exiting adventure...");
+                        playing = false;
+                        return;
+                    default:
+                        Console.WriteLine("Invalid option, please try again.");
+                        break;
+                }
+
+
+            }
         }
 
 
@@ -169,15 +243,6 @@ public class GameEngine
         Console.WriteLine($"Welcome, {selectedPlayer.Name}! Your adventure begins in the {selectedPlayer.Room?.Name}.");
         return selectedPlayer;
 
-        //TODO: Hack fix for testing combat, review later for better way to select monsters for combat
-
-        //List<Monster> monsters = _context.Characters.Where(c => c is Monster).Cast<Monster>().ToList();
-
-        //CombatEngine combat = new CombatEngine();
-
-        //var enemy = monsters[random.Next(2)];
-
-        //combat.StartCombat(selectedPlayer, enemy);
     }
 
     public void MovePlayer(Player player, string direction)

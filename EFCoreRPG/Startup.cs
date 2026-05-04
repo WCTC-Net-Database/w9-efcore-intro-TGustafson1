@@ -31,7 +31,7 @@ namespace EFCoreRPG
             );
 
             services.AddTransient<GameEngine>();
-            services.AddTransient<Menu>();
+            services.AddTransient<MenuEngine>();
             services.AddTransient<CombatEngine>(); 
         }
     }
