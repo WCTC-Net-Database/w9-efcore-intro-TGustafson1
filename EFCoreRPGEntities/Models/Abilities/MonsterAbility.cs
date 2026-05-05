@@ -11,11 +11,11 @@ namespace EFCoreRPGEntities.Models.Abilities
         public override void Activate(Character user, Character target)
         {
             Console.WriteLine($"{user.Name} uses {Name} on {target.Name}!");
-            Console.WriteLine($"/t{Name} {Description}");
+            Console.WriteLine($"{Name} {Description}");
 
-            target.TemporaryHealth -= HealthModifier;
-            target.TemporaryDefense -= DefenseModifier;
-            target.TemporaryStrength -= StrengthModifier;
+            target.TemporaryHealth += HealthModifier;
+            target.TemporaryDefense += DefenseModifier;
+            target.TemporaryStrength += StrengthModifier;
         }
     }
 }

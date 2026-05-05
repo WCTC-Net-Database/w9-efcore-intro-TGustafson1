@@ -11,10 +11,10 @@ namespace EFCoreRPGEntities.Models
     {
         public int AggressionLevel { get; set; }
 
-        public void Attack(Player target)
+        public void Attack(ICharacter target)
         {
             Console.WriteLine($"{Name} lunges at {target.Name} with ferocity!");
-            int targetDefense = target.GetTotalDefense();
+            int targetDefense = (target as Player)?.GetTotalDefense() ?? 0;
             int damage = 2 + TemporaryStrength - targetDefense;
             target.TemporaryHealth -= Math.Max(damage, 0);
             Console.WriteLine($"{target.Name} takes {Math.Max(damage, 0)} damage and has {Math.Max(target.TemporaryHealth, 0)} health left.");

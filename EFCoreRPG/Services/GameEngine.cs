@@ -69,11 +69,14 @@ public class GameEngine
         {
             var player = ChooseAdventurer();
 
-            DisplayCurrentRoom(player);
 
             while (true)
             {
+                //TODO: Figure out why abilities aren't showing up in the adventure menu, though they are in the data.
+                DisplayCurrentRoom(player);
+
                 var choice = _menu.AdventureMenu();
+
                 switch (choice)
                 {
                     case "1":
@@ -83,19 +86,46 @@ public class GameEngine
                         MovePlayer(player, direction);
                         break;
                     case "2":
-                        //TODO: Future inventory system to manage items and equipment. 
+                        //TODO: Future inventory system to manage items and equipment.
                         Console.WriteLine("Inventory feature not implemented yet.");
                         break;
                     case "3":
-                        Console.WriteLine($"Character: {player.Name}, Level: {player.Level}, Health: {player.TemporaryHealth}");
+                        Console.WriteLine($"Character: {player.Name}, Level: {player.Level}," +
+                            $" Health: {player.TemporaryHealth}, Strength: {player.Strength}, Defense: {player.Defense}");
                         break;
                     case "4":
+                        if (!player.Abilities.Any())
+                        {
+                            Console.WriteLine("You have no abilities.");
+                            break;
+                        }
+                        Console.WriteLine($"Abilities:");
+                        foreach (var ability in player.Abilities)
+                        {
+                            Console.WriteLine($"- {ability.Name}: {ability.Uses} uses left");
+                        }
+                        break;
+                    case "5":
                         Console.WriteLine("Resting to recover health...");
-                        player.TemporaryHealth = player.Health; //TODO: Revisit healing per round idea
+                        //TODO: Revisit healing per round idea, full heal between rounds not great
+                        player.TemporaryHealth = player.Health; 
                         _context.SaveChanges();
                         Console.WriteLine("Health fully recovered!");
                         break;
-                    case "5":
+                    case "6":
+                        //TODO: Update for multiple monsters? Also consider the nullable room.Monsters.FirstOrDefault() if we want to keep it as is
+                        if (!player.Room.Monsters.Any())
+                        {
+                            Console.WriteLine("There are no monsters here.");
+                            break;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Beginning combat...");
+                            _combat.StartCombat(player, player.Room.Monsters.FirstOrDefault());
+                        }
+                        break;
+                    case "0":
                         Console.WriteLine("Exiting adventure...");
                         playing = false;
                         return;
@@ -218,16 +248,17 @@ public class GameEngine
 
     public Player ChooseAdventurer()
     {
-        //TODO: Fix so that it just iterates over players (1,2,3...) rather than using player.ID
         Console.WriteLine("Choose which character to start the adventure with: ");
-        foreach (var player in _context.Characters.Where(c => c is Player))
+        var characters = _context.Characters.Where(c => c is Player).ToList();
+        for (int i = 0; i < characters.Count; i++)
         {
-            Console.WriteLine($"\t{player.Id}: {player.Name} (Level {player.Level})");
+            var player = characters[i] as Player;
+            Console.WriteLine($"\t{i + 1}: {player.Name} (Level {player.Level})");
         }
-        var playerId = int.Parse(Console.ReadLine() ?? "0");
+        var playerChoice = int.Parse(Console.ReadLine() ?? "0");
 
 
-        var selectedPlayer = _context.Characters.Find(playerId) as Player;
+        var selectedPlayer = characters.ElementAtOrDefault(playerChoice - 1) as Player;
 
 
         if (selectedPlayer != null)

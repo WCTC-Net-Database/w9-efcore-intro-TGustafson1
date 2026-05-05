@@ -49,10 +49,11 @@ namespace EFCoreRPG.Services
                     combatEnded = true;
                 }
 
+                // After combat ends, reset temporary stats
                 if (combatEnded)
                 {
-                    //TODO: Update to "save" player data as needed, such as experience points or permanent stat changes
                     //TODO: Grant experience points based on aggression level of monster defeated
+                    //TODO: Remove monster from room after combat? Or leave corpse in room?
                     player.TemporaryHealth = player.Health;
                     player.TemporaryDefense = player.Defense;
                     player.TemporaryStrength = player.Strength;
@@ -105,9 +106,9 @@ namespace EFCoreRPG.Services
             }
         }
 
-        public void MonsterTurn(Character attacker, Character defender)
+        public void MonsterTurn(Monster attacker, Player defender)
         {
-            int abilityChance = 50;
+            int abilityChance = 30;
 
             int roll = _random.Next(1, 101);
 

@@ -38,7 +38,8 @@ public class GameContext : DbContext
         modelBuilder.Entity<Item>()
             .HasDiscriminator<string>("Discriminator")
             .HasValue<Weapon>("Weapon")
-            .HasValue<Armor>("Armor");
+            .HasValue<Armor>("Armor")
+            .HasValue<Consumable>("Consumable");
 
         // many-to-many between Characters and Abilities
         modelBuilder.Entity<Character>()
@@ -119,6 +120,16 @@ public class GameContext : DbContext
                 Characters = new List<Character>()
             };
 
+            var fireball = new PlayerAbility
+            {
+                Name = "Fireball",
+                Description = "hurls a fiery ball that explodes on impact, dealing damage to the target.",
+                AbilityLevel = 2,
+                Uses = 2,
+                Damage = 5,
+                Characters = new List<Character>()
+            };
+
 
             var character1 = new Player
             {
@@ -130,6 +141,7 @@ public class GameContext : DbContext
                 Defense = 3,
                 Experience = 0
             };
+
             var character2 = new Player
             {
                 Name = "Wizard",
@@ -138,7 +150,8 @@ public class GameContext : DbContext
                 Health = 12,
                 Strength = 3,
                 Defense = 2,
-                Experience = 0
+                Experience = 0,
+                Abilities = new List<PlayerAbility> { fireball }
             };
 
             var character3 = new Monster
