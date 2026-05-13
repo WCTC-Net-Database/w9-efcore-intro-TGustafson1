@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EFCoreRPGEntities.Models.Abilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,7 +26,7 @@ namespace EFCoreRPGEntities.Models.Items
                     break;
                 case ConsumableEffect.AbilityRestore:
                     //TODO: Account for multiple abilities and restore them properly
-                    player.Abilities.FirstOrDefault().Uses += EffectStrength;
+                    ((PlayerAbility)player.Abilities.FirstOrDefault()).Uses += EffectStrength;
                     break;
                 case ConsumableEffect.StrengthBoost:
                     player.TemporaryStrength += EffectStrength;

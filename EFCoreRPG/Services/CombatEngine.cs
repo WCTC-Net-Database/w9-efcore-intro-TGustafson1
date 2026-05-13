@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using EFCoreRPGEntities.Data;
 using EFCoreRPGEntities.Models;
+using EFCoreRPGEntities.Models.Abilities;
 
 namespace EFCoreRPG.Services
 {
@@ -45,6 +46,7 @@ namespace EFCoreRPG.Services
                 MonsterTurn(monster, player);
                 if (player.TemporaryHealth <= 0)
                 {
+                    //TODO: Ensure combat/adventure actually ends. 
                     Console.WriteLine($"You have been defeated by {monster.Name}. Game over.");
                     combatEnded = true;
                 }
@@ -63,6 +65,8 @@ namespace EFCoreRPG.Services
 
         public void PlayerTurn(Player player, Monster monster)
         {
+            //choice between attack, ability, or flee
+            //
             Console.WriteLine("1. Attack\n2. Use Ability\n3. Flee");
             Console.Write("Enter your choice: ");
             var choice = Console.ReadLine();
@@ -79,7 +83,7 @@ namespace EFCoreRPG.Services
                         Console.WriteLine("Choose an ability:");
                         for (int i = 0; i < player.Abilities.Count; i++)
                         {
-                            Console.WriteLine($"{i + 1}. {player.Abilities.ElementAt(i).Name}: {player.Abilities.ElementAt(i).Uses} uses left");
+                            Console.WriteLine($"{i + 1}. {player.Abilities.ElementAt(i).Name}: {((PlayerAbility)player.Abilities.ElementAt(i)).Uses} uses left");
                         }
                         var abilityChoice = Console.ReadLine();
                         if (int.TryParse(abilityChoice, out int abilityIndex) && abilityIndex > 0 && abilityIndex <= player.Abilities.Count)
@@ -100,6 +104,7 @@ namespace EFCoreRPG.Services
                     }
                     break;
                 case "3":
+                    //TODO: Implement fleeing logic, monster should regenerate to full health if player flees, and player should be able to re-engage in combat if they choose to stay in the room.
                     Console.WriteLine("You flee the battle cowardly! Game over.");
                     combatEnded = true;
                     break;
@@ -108,6 +113,7 @@ namespace EFCoreRPG.Services
 
         public void MonsterTurn(Monster attacker, Player defender)
         {
+            // 30% chance to use an ability if available, otherwise attack
             int abilityChance = 30;
 
             int roll = _random.Next(1, 101);

@@ -1,12 +1,14 @@
-﻿using System;
+﻿using EFCoreRPGEntities.Models.Items;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EFCoreRPGEntities.Models.Items
+namespace EFCoreRPGEntities.Models.Containers
 {
-    public class Equipment
+    public class Equipment : Container
     {
         public int Id { get; set; }
 

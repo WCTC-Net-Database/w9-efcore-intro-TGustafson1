@@ -102,12 +102,16 @@ public class GameEngine
                         Console.WriteLine($"Abilities:");
                         foreach (var ability in player.Abilities)
                         {
-                            Console.WriteLine($"- {ability.Name}: {ability.Uses} uses left");
+                            Console.WriteLine($"- {ability.Name}: {((PlayerAbility)ability).Uses} uses left");
                         }
                         break;
                     case "5":
+                        if (player.Room.Monsters.Any())
+                        {
+                            Console.WriteLine("You can't rest while there are monsters in the room!");
+                            break;
+                        }
                         Console.WriteLine("Resting to recover health...");
-                        //TODO: Revisit healing per round idea, full heal between rounds not great
                         player.TemporaryHealth = player.Health; 
                         _context.SaveChanges();
                         Console.WriteLine("Health fully recovered!");

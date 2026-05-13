@@ -2,6 +2,7 @@
 using EFCoreRPGEntities.Models;
 using EFCoreRPGEntities.Models.Abilities;
 using EFCoreRPGEntities.Models.Items;
+using EFCoreRPGEntities.Models.Containers;
 
 namespace EFCoreRPGEntities.Data;
 
@@ -34,12 +35,39 @@ public class GameContext : DbContext
             .HasValue<MonsterAbility>("MonsterAbility")
             .HasValue<PlayerAbility>("PlayerAbility");
 
+        //TPH for Containers
+        modelBuilder.Entity<Container>()
+            .HasDiscriminator<string>("Discriminator")
+            .HasValue<Inventory>("Inventory")
+            .HasValue<Equipment>("Equipment");
+
         //TPH for Items
         modelBuilder.Entity<Item>()
             .HasDiscriminator<string>("Discriminator")
             .HasValue<Weapon>("Weapon")
             .HasValue<Armor>("Armor")
             .HasValue<Consumable>("Consumable");
+        //TODO: Add key items and quest items as needed
+
+        // One-to-many relationship between Container and Item
+        modelBuilder.Entity<Item>()
+            .HasOne(i => i.Container)
+            .WithMany(c => c.Items)
+            .HasForeignKey(i => i.ContainerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        //Player inventory and equipment relationships
+        modelBuilder.Entity<Player>()
+            .HasOne(p => p.Inventory)
+            .WithMany()
+            .HasForeignKey(p => p.InventoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Player>()
+            .HasOne(p => p.Equipment)
+            .WithMany()
+            .HasForeignKey(p => p.EquipmentId) 
+            .OnDelete(DeleteBehavior.Restrict);
 
         // many-to-many between Characters and Abilities
         modelBuilder.Entity<Character>()
@@ -106,10 +134,34 @@ public class GameContext : DbContext
 
         if (!Rooms.Any())
         {
-            var room1 = new Room { Name = "Entrance Hall", Description = "The main entry." };
-            var room2 = new Room { Name = "Treasure Room", Description = "A room filled with treasures." };
+            var room1 = new Room { Name = "Entrance Hall", Description = "The main entry, with paths in all directions." };
+            var room2 = new Room { Name = "Treasure Room", Description = "A room filled with sparkling treasures." };
+            var room3 = new Room { Name = "Armory", Description = "Racks of rusty weapons line the walls." };
+            var room4 = new Room { Name = "Dungeon", Description = "Cold, damp cells for prisoners." };
+            var room5 = new Room { Name = "Guard Room", Description = "A post where castle guards used to rest." };
+            var room6 = new Room { Name = "Library", Description = "Tall shelves of decayed books." };
+            var room7 = new Room { Name = "Secret Passage", Description = "A hidden, narrow corridor in the walls." };
+            var room8 = new Room { Name = "Alchemy Lab", Description = "Broken glass and strange smells linger here." };
+            var room9 = new Room { Name = "Great Hall", Description = "A massive dining area for long-gone royalty." };
+            var room10 = new Room { Name = "Throne Room", Description = "An imposing chamber where the boss awaits." };
 
-            Rooms.AddRange(room1, room2);
+            Rooms.AddRange(room1, room2, room3, room4, room5, room6, room7, room8, room9, room10);
+            SaveChanges();
+
+            // Wire up the map layout
+            room1.NorthRoom = room9; room1.SouthRoom = room6; room1.EastRoom = room3; room1.WestRoom = room5;
+            room2.SouthRoom = room3; room2.WestRoom = room9;
+            room3.NorthRoom = room2; room3.SouthRoom = room7; room3.WestRoom = room1;
+            room4.EastRoom = room5;
+            room5.EastRoom = room1; room5.WestRoom = room4;
+            room6.NorthRoom = room1; room6.EastRoom = room7;
+            room7.NorthRoom = room3; room7.WestRoom = room6;
+            room8.EastRoom = room9;
+            room9.NorthRoom = room10; room9.SouthRoom = room1; room9.EastRoom = room2; room9.WestRoom = room8;
+            room10.SouthRoom = room9;
+
+            SaveChanges();
+            
 
             var heckle = new MonsterAbility
             {
@@ -123,13 +175,34 @@ public class GameContext : DbContext
             var fireball = new PlayerAbility
             {
                 Name = "Fireball",
-                Description = "hurls a fiery ball that explodes on impact, dealing damage to the target.",
+                Description = "hurls a fiery ball that explodes on impact.",
                 AbilityLevel = 2,
                 Uses = 2,
                 Damage = 5,
                 Characters = new List<Character>()
             };
 
+            var weaken = new PlayerAbility
+            {
+                Name = "Weaken",
+                Description = "saps the target's strength, making them less effective in combat.",
+                AbilityLevel = 1,
+                Uses = 3,
+                StrengthModifier = -2,
+                Characters = new List<Character>()
+            };
+
+            var battlecry = new PlayerAbility
+            {
+                Name = "Battlecry",
+                Description = "lets out a fierce shout that frightens the target!",
+                AbilityLevel = 1,
+                Uses = 2,
+                StrengthModifier = -2,
+                Characters = new List<Character>()
+            };
+
+            Abilities.AddRange(heckle, fireball, weaken, battlecry);
 
             var character1 = new Player
             {
@@ -151,7 +224,7 @@ public class GameContext : DbContext
                 Strength = 3,
                 Defense = 2,
                 Experience = 0,
-                Abilities = new List<PlayerAbility> { fireball }
+                Abilities = new List<Ability> { fireball, weaken }
             };
 
             var character3 = new Monster
@@ -177,13 +250,24 @@ public class GameContext : DbContext
                 Abilities = new List<Ability> { heckle }
             };
 
-            Characters.AddRange(character1, character2, character3, character4);
+            // Place an enemy in the boss room
+            var character5 = new Monster
+            {
+                Name = "Orc King",
+                Level = 5,
+                Room = room10,
+                Health = 30,
+                Strength = 8,
+                Defense = 5,
+                AggressionLevel = 10,
+                Abilities = new List<Ability> { heckle }
+            };
+
+            Characters.AddRange(character1, character2, character3, character4, character5);
 
             SaveChanges();
 
             Console.WriteLine("\nGame world seeded successfully.\n");
-
-
         }
     }
 }

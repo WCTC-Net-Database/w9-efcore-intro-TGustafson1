@@ -122,7 +122,7 @@ namespace EFCoreRPGEntities.Migrations
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("EFCoreRPGEntities.Models.Items.Equipment", b =>
+            modelBuilder.Entity("EFCoreRPGEntities.Models.Containers.Container", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -130,19 +130,22 @@ namespace EFCoreRPGEntities.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ArmorId")
-                        .HasColumnType("int");
+                    b.Property<string>("ContainerType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("WeaponId")
-                        .HasColumnType("int");
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ArmorId");
+                    b.ToTable("Container");
 
-                    b.HasIndex("WeaponId");
+                    b.HasDiscriminator().HasValue("Container");
 
-                    b.ToTable("Equipment");
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("EFCoreRPGEntities.Models.Items.Item", b =>
@@ -152,6 +155,9 @@ namespace EFCoreRPGEntities.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ContainerId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
@@ -169,6 +175,8 @@ namespace EFCoreRPGEntities.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ContainerId");
 
                     b.ToTable("Items");
 
@@ -258,16 +266,53 @@ namespace EFCoreRPGEntities.Migrations
                     b.Property<int?>("EquipmentId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EquipmentId1")
+                        .HasColumnType("int");
+
                     b.Property<int>("Experience")
                         .HasColumnType("int");
 
-                    b.HasIndex("EquipmentId")
+                    b.Property<int?>("InventoryId")
+                        .HasColumnType("int");
+
+                    b.HasIndex("EquipmentId");
+
+                    b.HasIndex("EquipmentId1")
                         .IsUnique()
-                        .HasFilter("[EquipmentId] IS NOT NULL");
+                        .HasFilter("[EquipmentId1] IS NOT NULL");
+
+                    b.HasIndex("InventoryId");
 
                     b.HasIndex("RoomId");
 
                     b.HasDiscriminator().HasValue("Player");
+                });
+
+            modelBuilder.Entity("EFCoreRPGEntities.Models.Containers.Equipment", b =>
+                {
+                    b.HasBaseType("EFCoreRPGEntities.Models.Containers.Container");
+
+                    b.Property<int?>("ArmorId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WeaponId")
+                        .HasColumnType("int");
+
+                    b.HasIndex("ArmorId");
+
+                    b.HasIndex("WeaponId");
+
+                    b.HasDiscriminator().HasValue("Equipment");
+                });
+
+            modelBuilder.Entity("EFCoreRPGEntities.Models.Containers.Inventory", b =>
+                {
+                    b.HasBaseType("EFCoreRPGEntities.Models.Containers.Container");
+
+                    b.Property<int>("MaxWeight")
+                        .HasColumnType("int");
+
+                    b.HasDiscriminator().HasValue("Inventory");
                 });
 
             modelBuilder.Entity("EFCoreRPGEntities.Models.Items.Armor", b =>
@@ -318,21 +363,14 @@ namespace EFCoreRPGEntities.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("EFCoreRPGEntities.Models.Items.Equipment", b =>
+            modelBuilder.Entity("EFCoreRPGEntities.Models.Items.Item", b =>
                 {
-                    b.HasOne("EFCoreRPGEntities.Models.Items.Item", "Armor")
-                        .WithMany()
-                        .HasForeignKey("ArmorId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                    b.HasOne("EFCoreRPGEntities.Models.Containers.Container", "Container")
+                        .WithMany("Items")
+                        .HasForeignKey("ContainerId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("EFCoreRPGEntities.Models.Items.Item", "Weapon")
-                        .WithMany()
-                        .HasForeignKey("WeaponId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Armor");
-
-                    b.Navigation("Weapon");
+                    b.Navigation("Container");
                 });
 
             modelBuilder.Entity("EFCoreRPGEntities.Models.Room", b =>
@@ -378,9 +416,19 @@ namespace EFCoreRPGEntities.Migrations
 
             modelBuilder.Entity("EFCoreRPGEntities.Models.Player", b =>
                 {
-                    b.HasOne("EFCoreRPGEntities.Models.Items.Equipment", "Equipment")
+                    b.HasOne("EFCoreRPGEntities.Models.Containers.Equipment", "Equipment")
+                        .WithMany()
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("EFCoreRPGEntities.Models.Containers.Equipment", null)
                         .WithOne("Player")
-                        .HasForeignKey("EFCoreRPGEntities.Models.Player", "EquipmentId");
+                        .HasForeignKey("EFCoreRPGEntities.Models.Player", "EquipmentId1");
+
+                    b.HasOne("EFCoreRPGEntities.Models.Containers.Inventory", "Inventory")
+                        .WithMany()
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("EFCoreRPGEntities.Models.Room", "Room")
                         .WithMany("Players")
@@ -389,13 +437,31 @@ namespace EFCoreRPGEntities.Migrations
 
                     b.Navigation("Equipment");
 
+                    b.Navigation("Inventory");
+
                     b.Navigation("Room");
                 });
 
-            modelBuilder.Entity("EFCoreRPGEntities.Models.Items.Equipment", b =>
+            modelBuilder.Entity("EFCoreRPGEntities.Models.Containers.Equipment", b =>
                 {
-                    b.Navigation("Player")
-                        .IsRequired();
+                    b.HasOne("EFCoreRPGEntities.Models.Items.Item", "Armor")
+                        .WithMany()
+                        .HasForeignKey("ArmorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("EFCoreRPGEntities.Models.Items.Item", "Weapon")
+                        .WithMany()
+                        .HasForeignKey("WeaponId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Armor");
+
+                    b.Navigation("Weapon");
+                });
+
+            modelBuilder.Entity("EFCoreRPGEntities.Models.Containers.Container", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("EFCoreRPGEntities.Models.Room", b =>
@@ -403,6 +469,12 @@ namespace EFCoreRPGEntities.Migrations
                     b.Navigation("Monsters");
 
                     b.Navigation("Players");
+                });
+
+            modelBuilder.Entity("EFCoreRPGEntities.Models.Containers.Equipment", b =>
+                {
+                    b.Navigation("Player")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

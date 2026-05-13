@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using EFCoreRPGEntities.Models.Abilities;
+using EFCoreRPGEntities.Models.Containers;
 using EFCoreRPGEntities.Models.Items;
 
 namespace EFCoreRPGEntities.Models
@@ -11,10 +12,12 @@ namespace EFCoreRPGEntities.Models
     public class Player : Character
     {
         public int? EquipmentId { get; set; }
-        public virtual Equipment Equipment { get; set; }
-        public int Experience { get; set; }
+        public virtual Equipment? Equipment { get; set; }
 
-        public new ICollection<PlayerAbility> Abilities { get; set; } = new List<PlayerAbility>();
+        public int? InventoryId { get; set; }
+
+        public virtual Inventory? Inventory { get; set; }
+        public int Experience { get; set; }
 
         public int GetTotalAttack()
         {
