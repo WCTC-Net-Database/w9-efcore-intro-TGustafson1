@@ -42,16 +42,13 @@ public class GameEngine
                     DisplayCharacters();
                     break;
                 case "4":
-                    AddRoom();
+                    DisplayItemsWithLocations();
                     break;
                 case "5":
                     AddCharacter();
                     break;
                 case "6":
                     FindCharacter();
-                    break;
-                case "7":
-                    LevelUpCharacter();
                     break;
                 case "0":
                     return;
@@ -61,6 +58,55 @@ public class GameEngine
             }
         }        
     }
+
+    public void DisplayItemsWithLocations()
+    {
+        //TODO: Fix this to work with chests and rooms as well as player inventories and equipment
+        var items = _context.Items
+            .Include(i => i.Container)
+            .ToList();
+
+        if (!items.Any())
+        {
+            Console.WriteLine("No items available.");
+            return;
+        }
+
+        var players = _context.Characters
+            .OfType<Player>()
+            .ToList();
+
+        Console.WriteLine("\n--- Items and Locations ---");
+        foreach (var item in items)
+        {
+            var location = "Unassigned";
+
+            if (item.ContainerId.HasValue)
+            {
+                var owner = players.FirstOrDefault(p =>
+                    p.InventoryId == item.ContainerId || p.EquipmentId == item.ContainerId);
+
+                if (owner != null)
+                {
+                    if (owner.InventoryId == item.ContainerId)
+                    {
+                        location = $"{owner.Name} {owner.Inventory?.ContainerType ?? "Inventory"}";
+                    }
+                    else if (owner.EquipmentId == item.ContainerId)
+                    {
+                        location = $"{owner.Name} {owner.Equipment?.ContainerType ?? "Equipment"}";
+                    }
+                }
+                else if (item.Container != null)
+                {
+                    location = item.Container.ContainerType;
+                }
+            }
+
+            Console.WriteLine($"- {item.Name} -> {location}");
+        }
+    }
+
     public void BeginAdventure()
     {
         //Main game logic goes here, using other methods to handle specific actions like moving, combat, etc.
@@ -179,28 +225,40 @@ public class GameEngine
 
 
     }
-    public void AddRoom()
-    {
-        Console.Write("Enter room name: ");
-        var name = Console.ReadLine();
-        Console.Write("Enter room description: ");
-        var description = Console.ReadLine();
-        var room = new Room { Name = name ?? "Default Room", Description = description ?? "Default Description" };
-        _context.Rooms.Add(room);
-        _context.SaveChanges();
-        Console.WriteLine($"Room '{name}' added successfully.");
-    }
+
+    // DEPRECATED: Room creation is now handled through database seeding
+    //public void AddRoom()
+    //{
+    //    Console.Write("Enter room name: ");
+    //    var name = Console.ReadLine();
+    //    Console.Write("Enter room description: ");
+    //    var description = Console.ReadLine();
+    //    var room = new Room { Name = name ?? "Default Room", Description = description ?? "Default Description" };
+    //    _context.Rooms.Add(room);
+    //    _context.SaveChanges();
+    //    Console.WriteLine($"Room '{name}' added successfully.");
+    //}
 
     public void AddCharacter()
     {
+        //TODO: Update this to be more robust, allowing for strength, defense, health, and other character attributes to be set at creation
         Console.Write("Enter character name: ");
         var name = Console.ReadLine();
 
         Console.Write("Enter character level: ");
         var level = int.Parse(Console.ReadLine() ?? "1");
-        
+
+        Console.Write("Enter character strength: ");
+        var strength = int.Parse(Console.ReadLine() ?? "1");
+
+        Console.Write("Enter character defense: ");
+        var defense = int.Parse(Console.ReadLine() ?? "1");
+
+        Console.Write("Enter character health: ");
+        var health = int.Parse(Console.ReadLine() ?? "1");
+
         Console.Write("Enter room ID for the character: ");
-        var roomId = int.Parse(Console.ReadLine());
+        var roomId = int.Parse(Console.ReadLine() ?? "1");
 
         var room = _context.Rooms.Find(roomId);
         if (room == null)
@@ -209,7 +267,7 @@ public class GameEngine
             return;
         }
 
-        var character = new Player { Name = name, Level = level, RoomId = roomId };
+        var character = new Player { Name = name, Level = level, Strength = strength, Defense = defense, Health = health, RoomId = roomId };
 
         _context.Characters.Add(character);
         _context.SaveChanges();
@@ -219,7 +277,8 @@ public class GameEngine
     }
     public void DisplayRooms()
     {
-        var rooms = _context.Rooms.Include(r => r.Players).ToList();
+        //TODO: Update this to show the monsters in the room as well as if they are dead or alive
+        var rooms = _context.Rooms.Include(r => r.Players).Include(r => r.Monsters).ToList();
 
         foreach (var room in rooms)
         {
@@ -227,6 +286,11 @@ public class GameEngine
             foreach (var player in room.Players)
             {
                 Console.WriteLine($"    Character: {player.Name}, Level: {player.Level}");
+            }
+            foreach (var monster in room.Monsters)
+                {
+                    var status = monster.IsAlive ? "Alive" : "Dead";
+                    Console.WriteLine($"    Monster: {monster.Name} ({status})");
             }
         }
     }
@@ -266,24 +330,25 @@ public class GameEngine
         }
     }
 
-    public void LevelUpCharacter()
-    {
-        Console.Write("Enter the name of the character to level up: ");
-        var name = Console.ReadLine();
+    // DEPRECATED: Leveling up is now handled through abilities and combat rewards instead of a manual menu option
+    //public void LevelUpCharacter()
+    //{
+    //    Console.Write("Enter the name of the character to level up: ");
+    //    var name = Console.ReadLine();
 
-        var character = _context.Characters.FirstOrDefault(c => c.Name == name);
+    //    var character = _context.Characters.FirstOrDefault(c => c.Name == name);
 
-        if (character != null)
-        {
-            character.Level++;
-            _context.SaveChanges();
-            Console.WriteLine($"Character '{name}' leveled up to level {character.Level}.");
-        }
-        else
-        {
-            Console.WriteLine("Character not found.");
-        }
-    }
+    //    if (character != null)
+    //    {
+    //        character.Level++;
+    //        _context.SaveChanges();
+    //        Console.WriteLine($"Character '{name}' leveled up to level {character.Level}.");
+    //    }
+    //    else
+    //    {
+    //        Console.WriteLine("Character not found.");
+    //    }
+    //}
 
     public Player ChooseAdventurer()
     {
@@ -437,6 +502,7 @@ public class GameEngine
         //TODO: Review this to understand loading of context references
         _context.Entry(player).Reference(p => p.Inventory).Load();
         _context.Entry(player).Reference(p => p.Equipment).Load();
+        _context.Entry(player).Collection(p => p.Abilities).Load();
 
         var created = false;
 
@@ -479,7 +545,7 @@ public class GameEngine
         {
             foreach (var item in player.Inventory.Items)
             {
-                Console.WriteLine($"- {item.Name} ({item.GetType().Name})");
+                Console.WriteLine($"- {item.Name}");
             }
         }
         else
@@ -492,7 +558,7 @@ public class GameEngine
         {
             foreach (var item in player.Equipment.Items)
             {
-                Console.WriteLine($"- {item.Name} ({item.GetType().Name})");
+                Console.WriteLine($"- {item.Name}");
             }
         }
         else

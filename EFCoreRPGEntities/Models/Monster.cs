@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using EFCoreRPGEntities.Models.Abilities;
+using EFCoreRPGEntities.Models.Containers;
 
 namespace EFCoreRPGEntities.Models
 {
@@ -12,6 +13,9 @@ namespace EFCoreRPGEntities.Models
         public int AggressionLevel { get; set; }
 
         public bool IsAlive { get; set; } = true;
+
+        public int? LootId { get; set; }
+        public virtual MonsterLoot? Loot { get; set; }
 
         public void Attack(ICharacter target)
         {

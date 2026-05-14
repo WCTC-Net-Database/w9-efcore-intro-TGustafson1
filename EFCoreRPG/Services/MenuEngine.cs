@@ -8,14 +8,14 @@ public class MenuEngine
 
     public string MainMenu()
     {
+        //TODO: Add option to add ability to character and display all abilities and their effects
         Console.WriteLine("\n--- Game Menu ---");
         Console.WriteLine("1. Start Adventure");
         Console.WriteLine("2. Display Rooms");
         Console.WriteLine("3. Display Characters");
-        Console.WriteLine("4. Add Room");
+        Console.WriteLine("4. Display Items and Locations");
         Console.WriteLine("5. Add Character");
         Console.WriteLine("6. Find Character");
-        Console.WriteLine("7. Level Up Character");
         Console.WriteLine("0. Exit");
         Console.Write("Enter your choice: ");
 

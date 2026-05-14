@@ -104,8 +104,12 @@ namespace EFCoreRPG.Services
                     }
                     break;
                 case "3":
-                    //TODO: Implement fleeing logic, monster should regenerate to full health if player flees, and player should be able to re-engage in combat if they choose to stay in the room.
-                    Console.WriteLine("You flee the battle cowardly! Game over.");
+                    //regenerate monster's stats to full if player flees
+                    monster.TemporaryHealth = monster.Health;
+                    monster.TemporaryDefense = monster.Defense;
+                    monster.TemporaryStrength = monster.Strength;
+
+                    Console.WriteLine("You flee the battle cowardly! The monster regains its strength.");
                     combatEnded = true;
                     break;
             }

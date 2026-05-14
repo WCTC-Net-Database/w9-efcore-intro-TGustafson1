@@ -39,7 +39,9 @@ public class GameContext : DbContext
         modelBuilder.Entity<Container>()
             .HasDiscriminator<string>("Discriminator")
             .HasValue<Inventory>("Inventory")
-            .HasValue<Equipment>("Equipment");
+            .HasValue<Equipment>("Equipment")
+            .HasValue<Chest>("Chest")
+            .HasValue<MonsterLoot>("MonsterLoot");
 
         //TPH for Items
         modelBuilder.Entity<Item>()
@@ -126,6 +128,13 @@ public class GameContext : DbContext
             .HasForeignKey(m => m.RoomId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        // Monster to monster loot relationship
+        modelBuilder.Entity<Monster>()
+            .HasOne(m => m.Loot)
+            .WithOne()
+            .HasForeignKey<Monster>(m => m.LootId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<Monster>()
             .Property(m => m.IsAlive)
             .HasDefaultValue(true);
@@ -199,7 +208,7 @@ public class GameContext : DbContext
             var battlecry = new PlayerAbility
             {
                 Name = "Battlecry",
-                Description = "lets out a fierce shout that frightens the target!",
+                Description = "lets out a fierce shout that frightens the target, lowering their strength!",
                 AbilityLevel = 1,
                 Uses = 2,
                 StrengthModifier = -2,
@@ -210,6 +219,9 @@ public class GameContext : DbContext
 
             var knightInventory = new Inventory { ContainerType = "Inventory", MaxWeight = 80 };
             var knightEquipment = new Equipment { ContainerType = "Equipment" };
+
+            var wizardInventory = new Inventory { ContainerType = "Inventory", MaxWeight = 80 };
+            var wizardEquipment = new Equipment { ContainerType = "Equipment" };
 
             var ironSword = new Weapon
             {
@@ -227,12 +239,26 @@ public class GameContext : DbContext
                 Defense = 2
             };
 
+            var abilityRestorePotion = new Consumable
+            {
+                Name = "Ability Restore Potion",
+                Weight = 1,
+                Value = 30,
+                Effect = ConsumableEffect.AbilityRestore,
+                EffectStrength = 2
+            };
+
             knightInventory.AddItem(ironSword);
             knightInventory.AddItem(leatherArmor);
 
+            wizardInventory.AddItem(abilityRestorePotion);
+
             Add(knightInventory);
             Add(knightEquipment);
-            Items.AddRange(ironSword, leatherArmor);
+            Add(wizardInventory);
+            Add(wizardEquipment);
+
+            Items.AddRange(ironSword, leatherArmor, abilityRestorePotion);
 
             var character1 = new Player
             {
@@ -257,6 +283,8 @@ public class GameContext : DbContext
                 Strength = 3,
                 Defense = 2,
                 Experience = 0,
+                Inventory = wizardInventory,
+                Equipment = wizardEquipment,
                 Abilities = new List<Ability> { fireball, weaken }
             };
 

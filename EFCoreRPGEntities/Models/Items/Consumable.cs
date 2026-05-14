@@ -9,7 +9,6 @@ namespace EFCoreRPGEntities.Models.Items
 {
     public class Consumable : Item
     {
-        //TODO: Add properties to define the effect and strength of the consumable 
         public int EffectStrength { get; set;  } = 0;
 
         public ConsumableEffect Effect { get; set; } = ConsumableEffect.None;
