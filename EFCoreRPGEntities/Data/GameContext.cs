@@ -16,6 +16,8 @@ public class GameContext : DbContext
 
     public DbSet<Item> Items { get; set; }
 
+    public DbSet<Door> Doors { get; set; }
+
 
     public GameContext(DbContextOptions<GameContext> options) : base(options)
     {
@@ -48,8 +50,8 @@ public class GameContext : DbContext
             .HasDiscriminator<string>("Discriminator")
             .HasValue<Weapon>("Weapon")
             .HasValue<Armor>("Armor")
-            .HasValue<Consumable>("Consumable");
-        //TODO: Add key items and quest items as needed
+            .HasValue<Consumable>("Consumable")
+            .HasValue<KeyItem>("KeyItem");
 
         // One-to-many relationship between Container and Item
         modelBuilder.Entity<Item>()
@@ -68,7 +70,7 @@ public class GameContext : DbContext
         modelBuilder.Entity<Player>()
             .HasOne(p => p.Equipment)
             .WithMany()
-            .HasForeignKey(p => p.EquipmentId) 
+            .HasForeignKey(p => p.EquipmentId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // many-to-many between Characters and Abilities
@@ -152,7 +154,20 @@ public class GameContext : DbContext
             .HasForeignKey(c => c.RoomId)
             .OnDelete(DeleteBehavior.SetNull);
 
-    base.OnModelCreating(modelBuilder);
+        //Door relationships to rooms
+        modelBuilder.Entity<Door>()
+            .HasOne(d => d.RoomA)
+            .WithMany()
+            .HasForeignKey(d => d.RoomAId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Door>()
+            .HasOne(d => d.RoomB)
+            .WithMany()
+            .HasForeignKey(d => d.RoomBId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        base.OnModelCreating(modelBuilder);
     }
 
     public void Seed()
@@ -187,7 +202,7 @@ public class GameContext : DbContext
             room10.SouthRoom = room9;
 
             SaveChanges();
-            
+
 
             var heckle = new MonsterAbility
             {
@@ -269,22 +284,76 @@ public class GameContext : DbContext
                 EffectStrength = 2
             };
 
+            var healthPotion = new Consumable
+            {
+                Name = "Health Potion",
+                Weight = 1,
+                Value = 25,
+                Effect = ConsumableEffect.Heal,
+                EffectStrength = 10
+            };
+
+            var ironKey = new KeyItem
+            {
+                Name = "Iron Key",
+                Weight = 1,
+                Value = 5
+            };
+
+            var goldenKey = new KeyItem
+            {
+                Name = "Golden Key",
+                Weight = 1,
+                Value = 50
+            };
+
             knightInventory.AddItem(ironSword);
             knightInventory.AddItem(leatherArmor);
 
             wizardInventory.AddItem(abilityRestorePotion);
 
             // create containers
-            var armoryChest = new Chest { ContainerType = "Chest", Room = room3 };
+            var armoryChest = new Chest { ContainerType = "Armory Chest", Room = room3 };
             armoryChest.AddItem(steelSword);
+
+            var guardRoomChest = new Chest { ContainerType = "Guard Room Chest", Room = room5 };
+            guardRoomChest.AddItem(ironKey);
+
+            var dungeonChest = new Chest { ContainerType = "Dungeon Chest", Room = room4 };
+            dungeonChest.AddItem(healthPotion);
+
+            var libraryChest = new Chest { ContainerType = "Library Chest", Room = room6 };
+            libraryChest.AddItem(goldenKey);
 
             Add(knightInventory);
             Add(knightEquipment);
             Add(wizardInventory);
             Add(wizardEquipment);
             Add(armoryChest);
+            Add(guardRoomChest);
+            Add(dungeonChest);
+            Add(libraryChest);
 
-            Items.AddRange(ironSword, leatherArmor, abilityRestorePotion);
+            Items.AddRange(ironSword, leatherArmor, steelSword, abilityRestorePotion, healthPotion, ironKey, goldenKey);
+            SaveChanges();
+
+            var doors = new List<Door>
+            {
+                new Door { Name = "Entrance Hall - Great Hall Door", RoomA = room1, RoomB = room9 },
+                new Door { Name = "Entrance Hall - Library Door", RoomA = room1, RoomB = room6 },
+                new Door { Name = "Entrance Hall - Armory Door", RoomA = room1, RoomB = room3 },
+                new Door { Name = "Entrance Hall - Guard Room Door", RoomA = room1, RoomB = room5 },
+                new Door { Name = "Treasure Room - Armory Door", RoomA = room2, RoomB = room3 },
+                new Door { Name = "Treasure Room - Great Hall Door", RoomA = room2, RoomB = room9 },
+                new Door { Name = "Armory - Secret Passage Door", RoomA = room3, RoomB = room7 },
+                new Door { Name = "Guard Room - Dungeon Door", RoomA = room5, RoomB = room4, IsLocked = true, RequiredKeyItemId = ironKey.Id },
+                new Door { Name = "Library - Secret Passage Door", RoomA = room6, RoomB = room7 },
+                new Door { Name = "Alchemy Lab - Great Hall Door", RoomA = room8, RoomB = room9 },
+                new Door { Name = "Great Hall - Throne Room Door", RoomA = room9, RoomB = room10, IsLocked = true, RequiredKeyItemId = goldenKey.Id }
+            };
+
+            Doors.AddRange(doors);
+
             SaveChanges();
 
             var character1 = new Player
@@ -354,10 +423,9 @@ public class GameContext : DbContext
                 Abilities = new List<Ability> { heckle }
             };
 
+
             Characters.AddRange(character1, character2, character3, character4, character5);
             SaveChanges();
-
-            Console.WriteLine("\nGame world seeded successfully.\n");
         }
     }
 }

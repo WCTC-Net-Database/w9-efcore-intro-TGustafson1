@@ -425,6 +425,15 @@ public class GameEngine
             return;
         }
 
+        var door = _context.Doors.FirstOrDefault(d =>
+        (d.RoomAId == currentRoom.Id && d.RoomBId == nextRoom.Id) ||
+        (d.RoomBId == currentRoom.Id && d.RoomAId == nextRoom.Id));
+
+        if (door != null && !EnsureUnlocked(door, player, door.Name))
+        {
+            return;
+        }
+
         player.RoomId = nextRoom.Id;
         _context.SaveChanges();
 
@@ -799,6 +808,11 @@ public class GameEngine
         }
 
         var label = selectedChest.ContainerType ?? "Chest";
+        if (!EnsureUnlocked(selectedChest, player, label))
+        {
+            return;
+        }
+
         LootContainer(selectedChest, player, label);
     }
 
@@ -822,5 +836,37 @@ public class GameEngine
             container.RemoveItem(selected);
             _context.SaveChanges();
         }
+    }
+
+    private bool EnsureUnlocked(ILockable lockable, Player player, string targetName)
+    {
+        if (!lockable.IsLocked)
+        {
+            return true;
+        }
+
+        if (!lockable.RequiredKeyItemId.HasValue)
+        {
+            Console.WriteLine($"{targetName} is locked.");
+            return false;
+        }
+
+        EnsureInventoryLoaded(player);
+
+        var key = player.Inventory?.Items
+            .OfType<KeyItem>()
+            .FirstOrDefault(k => k.Id == lockable.RequiredKeyItemId.Value);
+
+        if (key == null)
+        {
+            Console.WriteLine($"{targetName} is locked. You need the matching key.");
+            return false;
+        }
+
+        lockable.IsLocked = false;
+        _context.SaveChanges();
+
+        Console.WriteLine($"You unlocked the {targetName} with {key.Name}.");
+        return true;
     }
 }
