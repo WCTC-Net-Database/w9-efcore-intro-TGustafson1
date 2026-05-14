@@ -11,6 +11,8 @@ namespace EFCoreRPGEntities.Models
     {
         public int AggressionLevel { get; set; }
 
+        public bool IsAlive { get; set; } = true;
+
         public void Attack(ICharacter target)
         {
             Console.WriteLine($"{Name} lunges at {target.Name} with ferocity!");

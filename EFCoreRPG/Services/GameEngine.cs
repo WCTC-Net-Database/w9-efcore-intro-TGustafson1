@@ -2,6 +2,8 @@
 using EFCoreRPGEntities.Data;
 using EFCoreRPGEntities.Models;
 using EFCoreRPGEntities.Models.Abilities;
+using EFCoreRPGEntities.Models.Containers;
+using EFCoreRPGEntities.Models.Items;
 
 namespace EFCoreRPG.Services;
 
@@ -80,18 +82,16 @@ public class GameEngine
                 switch (choice)
                 {
                     case "1":
-                        //TODO: Set up map and room connections, then implement movement logic here
                         Console.Write("Enter direction to move (N/S/E/W): ");
                         var direction = Console.ReadLine();
                         MovePlayer(player, direction);
                         break;
                     case "2":
-                        //TODO: Future inventory system to manage items and equipment.
-                        Console.WriteLine("Inventory feature not implemented yet.");
+                        ManageInventory(player);
                         break;
                     case "3":
                         Console.WriteLine($"Character: {player.Name}, Level: {player.Level}," +
-                            $" Health: {player.TemporaryHealth}, Strength: {player.Strength}, Defense: {player.Defense}");
+                            $" Health: {player.TemporaryHealth}/{player.Health}, Strength: {player.Strength}, Defense: {player.Defense}");
                         break;
                     case "4":
                         if (!player.Abilities.Any())
@@ -106,9 +106,9 @@ public class GameEngine
                         }
                         break;
                     case "5":
-                        if (player.Room.Monsters.Any())
+                        if (player.Room.Monsters.Any(m => m.IsAlive))
                         {
-                            Console.WriteLine("You can't rest while there are monsters in the room!");
+                            Console.WriteLine("You can't rest while there are living monsters in the room!");
                             break;
                         }
                         Console.WriteLine("Resting to recover health...");
@@ -117,23 +117,58 @@ public class GameEngine
                         Console.WriteLine("Health fully recovered!");
                         break;
                     case "6":
-                        //TODO: Update for multiple monsters? Also consider the nullable room.Monsters.FirstOrDefault() if we want to keep it as is
-                        if (!player.Room.Monsters.Any())
+                        //Create a list of the living monsters in the room
+                        var aliveMonsters = player.Room.Monsters.Where(m => m.IsAlive).ToList();
+                        //if no monsters to fight, break out of combat menu and return to adventure menu
+                        if (!aliveMonsters.Any())
                         {
-                            Console.WriteLine("There are no monsters here.");
+                            Console.WriteLine("There are no monsters to fight here.");
                             break;
                         }
+
+                        Monster selectedMonster;
+                        //if only one monster, select it immediately
+                        if (aliveMonsters.Count == 1)
+                        {
+                            selectedMonster = aliveMonsters[0];
+                        }
+                        //else prompt to choose a specific monster to fight
                         else
                         {
-                            Console.WriteLine("Beginning combat...");
-                            _combat.StartCombat(player, player.Room.Monsters.FirstOrDefault());
+                            Console.WriteLine("Choose a monster to fight:");
+                            for (int i = 0; i < aliveMonsters.Count; i++)
+                            {
+                                Console.WriteLine($"\t{i + 1}: {aliveMonsters[i].Name}");
+                            }
+
+                            if (!int.TryParse(Console.ReadLine(), out var monsterChoice) ||
+                                monsterChoice < 1 || monsterChoice > aliveMonsters.Count)
+                            {
+                                Console.WriteLine("Invalid choice.");
+                                break;
+                            }
+
+                            selectedMonster = aliveMonsters[monsterChoice - 1];
+                        }
+
+                        //begin combat with the selected monster
+                        Console.WriteLine("Beginning combat...");
+                        var playerDefeated = _combat.StartCombat(player, selectedMonster);
+                        //if defeated return to main menu, otherwise return to adventure menu
+                        if (playerDefeated)
+                        {
+                            Console.WriteLine("Returning to main menu...");
+                            playing = false;
+                            return;
                         }
                         break;
                     case "0":
+                        //exit adventure and return to main menu
                         Console.WriteLine("Exiting adventure...");
                         playing = false;
                         return;
                     default:
+                        //default option, repeating adventure menu
                         Console.WriteLine("Invalid option, please try again.");
                         break;
                 }
@@ -253,17 +288,31 @@ public class GameEngine
     public Player ChooseAdventurer()
     {
         Console.WriteLine("Choose which character to start the adventure with: ");
-        var characters = _context.Characters.Where(c => c is Player).ToList();
+        var characters = _context.Characters
+            .OfType<Player>()
+            .Include(p => p.Inventory)
+                .ThenInclude(i => i.Items)
+            .Include(p => p.Equipment)
+                .ThenInclude(e => e.Items)
+            .Include(p => p.Equipment)
+                .ThenInclude(e => e.Weapon)
+            .Include(p => p.Equipment)
+                .ThenInclude(e => e.Armor)
+            .ToList();
+
+        if (!characters.Any())
+        {
+            Console.WriteLine("No characters available.");
+            return null;
+        }
+
         for (int i = 0; i < characters.Count; i++)
         {
-            var player = characters[i] as Player;
-            Console.WriteLine($"\t{i + 1}: {player.Name} (Level {player.Level})");
+            Console.WriteLine($"\t{i + 1}: {characters[i].Name} (Level {characters[i].Level})");
         }
+
         var playerChoice = int.Parse(Console.ReadLine() ?? "0");
-
-
-        var selectedPlayer = characters.ElementAtOrDefault(playerChoice - 1) as Player;
-
+        var selectedPlayer = characters.ElementAtOrDefault(playerChoice - 1);
 
         if (selectedPlayer != null)
         {
@@ -277,7 +326,6 @@ public class GameEngine
 
         Console.WriteLine($"Welcome, {selectedPlayer.Name}! Your adventure begins in the {selectedPlayer.Room?.Name}.");
         return selectedPlayer;
-
     }
 
     public void MovePlayer(Player player, string direction)
@@ -340,9 +388,200 @@ public class GameEngine
         if (room.WestRoomId.HasValue) exits.Add("West");
         Console.WriteLine($"Exits: {string.Join(", ", exits)}");
 
+        //TODO: Update to show that the monster in the room is dead or alive, and update the combat logic to account for multiple monsters in a room.
         if (room.Monsters.Any())
         {
-            Console.WriteLine($"Monsters here: {string.Join(", ", room.Monsters.Select(m => m.Name))}");
+            var monsterStatuses = room.Monsters.Select(m =>
+            {
+                var status = m.IsAlive ? "Alive" : "Dead";
+                return $"{m.Name} ({status})";
+            });
+
+            Console.WriteLine($"Monsters here: {string.Join(", ", monsterStatuses)}");
         }
+    }
+
+    private void ManageInventory(Player player)
+    {
+        EnsureInventoryLoaded(player);
+
+        while (true)
+        {
+            var choice = _menu.InventoryMenu();
+
+            switch (choice)
+            {
+                case "1":
+                    DisplayAllItems(player);
+                    break;
+                case "2":
+                    UseInventoryItem(player);
+                    break;
+                case "3":
+                    EquipInventoryItem(player);
+                    break;
+                case "4":
+                    UnequipItem(player);
+                    break;
+                case "0":
+                    return;
+                default:
+                    Console.WriteLine("Invalid option, please try again.");
+                    break;
+            }
+        }
+    }
+
+    private void EnsureInventoryLoaded(Player player)
+    {
+        //TODO: Review this to understand loading of context references
+        _context.Entry(player).Reference(p => p.Inventory).Load();
+        _context.Entry(player).Reference(p => p.Equipment).Load();
+
+        var created = false;
+
+        if (player.Inventory == null)
+        {
+            player.Inventory = new Inventory { ContainerType = "Inventory", MaxWeight = 100 };
+            _context.Add(player.Inventory);
+            created = true;
+        }
+
+        if (player.Equipment == null)
+        {
+            player.Equipment = new Equipment { ContainerType = "Equipment" };
+            _context.Add(player.Equipment);
+            created = true;
+        }
+
+        if (player.Inventory != null)
+        {
+            _context.Entry(player.Inventory).Collection(i => i.Items).Load();
+        }
+
+        if (player.Equipment != null)
+        {
+            _context.Entry(player.Equipment).Collection(e => e.Items).Load();
+            _context.Entry(player.Equipment).Reference(e => e.Weapon).Load();
+            _context.Entry(player.Equipment).Reference(e => e.Armor).Load();
+        }
+
+        if (created)
+        {
+            _context.SaveChanges();
+        }
+    }
+
+    private void DisplayAllItems(Player player)
+    {
+        Console.WriteLine("\n--- Inventory Items ---");
+        if (player.Inventory?.Items.Any() == true)
+        {
+            foreach (var item in player.Inventory.Items)
+            {
+                Console.WriteLine($"- {item.Name} ({item.GetType().Name})");
+            }
+        }
+        else
+        {
+            Console.WriteLine("No items in inventory.");
+        }
+
+        Console.WriteLine("\n--- Equipped Items ---");
+        if (player.Equipment?.Items.Any() == true)
+        {
+            foreach (var item in player.Equipment.Items)
+            {
+                Console.WriteLine($"- {item.Name} ({item.GetType().Name})");
+            }
+        }
+        else
+        {
+            Console.WriteLine("No items equipped.");
+        }
+    }
+
+    private void UseInventoryItem(Player player)
+    {
+        var items = player.Inventory?.Items
+            .OfType<Consumable>()
+            .Cast<Item>()
+            .ToList() ?? new List<Item>();
+
+        if (!items.Any())
+        {
+            Console.WriteLine("No usable items in inventory.");
+            return;
+        }
+
+        var selected = PromptForItemSelection(items, "Choose an item to use:");
+        if (selected == null)
+        {
+            return;
+        }
+
+        player.UseItem(selected);
+        player.Inventory?.RemoveItem(selected);
+        _context.SaveChanges();
+    }
+
+    private void EquipInventoryItem(Player player)
+    {
+        var items = player.Inventory?.Items
+            .Where(i => i is Weapon || i is Armor)
+            .ToList() ?? new List<Item>();
+
+        if (!items.Any())
+        {
+            Console.WriteLine("No equippable items in inventory.");
+            return;
+        }
+
+        var selected = PromptForItemSelection(items, "Choose an item to equip:");
+        if (selected == null)
+        {
+            return;
+        }
+
+        player.Equip(selected);
+        _context.SaveChanges();
+    }
+
+    private void UnequipItem(Player player)
+    {
+        var items = player.Equipment?.Items.ToList() ?? new List<Item>();
+        if (!items.Any())
+        {
+            Console.WriteLine("No items equipped.");
+            return;
+        }
+
+        var selected = PromptForItemSelection(items, "Choose an item to unequip:");
+        if (selected == null)
+        {
+            return;
+        }
+
+        player.Unequip(selected);
+        _context.SaveChanges();
+    }
+
+    private Item? PromptForItemSelection(IReadOnlyList<Item> items, string prompt)
+    {
+        Console.WriteLine(prompt);
+        for (int i = 0; i < items.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {items[i].Name}");
+        }
+
+        Console.Write("Enter number: ");
+        if (!int.TryParse(Console.ReadLine(), out var choice) ||
+            choice < 1 || choice > items.Count)
+        {
+            Console.WriteLine("Invalid choice.");
+            return null;
+        }
+
+        return items[choice - 1];
     }
 }

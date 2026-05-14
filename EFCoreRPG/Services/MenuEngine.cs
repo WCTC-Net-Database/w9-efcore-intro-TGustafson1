@@ -45,4 +45,18 @@ public class MenuEngine
     {
         return "";
     }
+
+    public string InventoryMenu()
+    {
+        Console.WriteLine("\n--- Inventory Menu ---");
+        Console.WriteLine("1. Show all items");
+        Console.WriteLine("2. Use an item");
+        Console.WriteLine("3. Equip an item");
+        Console.WriteLine("4. Unequip an item");
+        Console.WriteLine("0. Back");
+        Console.Write("Enter your choice: ");
+        var choice = Console.ReadLine();
+        Console.WriteLine();
+        return choice ?? " ";
+    }
 }

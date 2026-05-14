@@ -16,10 +16,9 @@ namespace EFCoreRPG.Services
         private bool combatEnded = false;
 
 
-        public void StartCombat(Player player, Monster monster)
+        public bool StartCombat(Player player, Monster monster)
         {
-            
-
+            combatEnded = false;
             InitializeStats(player, monster);
 
             Console.WriteLine($"You face up against a {monster.Name}!\n");
@@ -37,6 +36,7 @@ namespace EFCoreRPG.Services
                 if (monster.TemporaryHealth <= 0)
                 {
                     Console.WriteLine($"{monster.Name} defeated! You win!");
+                    monster.IsAlive = false;
                     combatEnded = true;
                     continue;
                 }
@@ -46,27 +46,27 @@ namespace EFCoreRPG.Services
                 MonsterTurn(monster, player);
                 if (player.TemporaryHealth <= 0)
                 {
-                    //TODO: Ensure combat/adventure actually ends. 
                     Console.WriteLine($"You have been defeated by {monster.Name}. Game over.");
                     combatEnded = true;
                 }
 
-                // After combat ends, reset temporary stats
+                // After combat ends, reset temporary stat changes and grant experience if player won
                 if (combatEnded)
                 {
-                    //TODO: Grant experience points based on aggression level of monster defeated
-                    //TODO: Remove monster from room after combat? Or leave corpse in room?
-                    player.TemporaryHealth = player.Health;
+                    //TODO: Review experience gain and leveling process
+                    if (monster.TemporaryHealth <= 0)
+                        player.Experience += monster.AggressionLevel * 10;
                     player.TemporaryDefense = player.Defense;
                     player.TemporaryStrength = player.Strength;
                 }
             }
+
+            return player.TemporaryHealth <= 0;
         }
 
         public void PlayerTurn(Player player, Monster monster)
         {
             //choice between attack, ability, or flee
-            //
             Console.WriteLine("1. Attack\n2. Use Ability\n3. Flee");
             Console.Write("Enter your choice: ");
             var choice = Console.ReadLine();

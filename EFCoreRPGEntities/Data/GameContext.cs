@@ -126,6 +126,10 @@ public class GameContext : DbContext
             .HasForeignKey(m => m.RoomId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        modelBuilder.Entity<Monster>()
+            .Property(m => m.IsAlive)
+            .HasDefaultValue(true);
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -204,6 +208,32 @@ public class GameContext : DbContext
 
             Abilities.AddRange(heckle, fireball, weaken, battlecry);
 
+            var knightInventory = new Inventory { ContainerType = "Inventory", MaxWeight = 80 };
+            var knightEquipment = new Equipment { ContainerType = "Equipment" };
+
+            var ironSword = new Weapon
+            {
+                Name = "Iron Sword",
+                Weight = 5,
+                Value = 25,
+                AttackPower = 2
+            };
+
+            var leatherArmor = new Armor
+            {
+                Name = "Leather Armor",
+                Weight = 8,
+                Value = 20,
+                Defense = 2
+            };
+
+            knightInventory.AddItem(ironSword);
+            knightInventory.AddItem(leatherArmor);
+
+            Add(knightInventory);
+            Add(knightEquipment);
+            Items.AddRange(ironSword, leatherArmor);
+
             var character1 = new Player
             {
                 Name = "Knight",
@@ -212,7 +242,10 @@ public class GameContext : DbContext
                 Health = 16,
                 Strength = 5,
                 Defense = 3,
-                Experience = 0
+                Experience = 0,
+                Inventory = knightInventory,
+                Equipment = knightEquipment,
+                Abilities = new List<Ability> { battlecry }
             };
 
             var character2 = new Player
@@ -236,6 +269,7 @@ public class GameContext : DbContext
                 Strength = 4,
                 Defense = 1,
                 AggressionLevel = 5,
+                IsAlive = true,
                 Abilities = new List<Ability> { heckle }
             };
             var character4 = new Monster
@@ -247,6 +281,7 @@ public class GameContext : DbContext
                 Strength = 2,
                 Defense = 3,
                 AggressionLevel = 8,
+                IsAlive = true,
                 Abilities = new List<Ability> { heckle }
             };
 
@@ -260,6 +295,7 @@ public class GameContext : DbContext
                 Strength = 8,
                 Defense = 5,
                 AggressionLevel = 10,
+                IsAlive = true,
                 Abilities = new List<Ability> { heckle }
             };
 
