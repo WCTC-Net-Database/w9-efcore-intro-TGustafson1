@@ -84,8 +84,32 @@ namespace EFCoreRPGEntities.Models
                 return;
             }
 
+            if (item is Weapon && (Equipment.Weapon != null || Equipment.Items.OfType<Weapon>().Any()))
+            {
+                Console.WriteLine("You already have a weapon equipped.");
+                return;
+            }
+
+            if (item is Armor && (Equipment.Armor != null || Equipment.Items.OfType<Armor>().Any()))
+            {
+                Console.WriteLine("You already have armor equipped.");
+                return;
+            }
+
             Inventory.RemoveItem(item);
             Equipment.AddItem(item);
+
+            if (item is Weapon weapon)
+            {
+                Equipment.Weapon = weapon;
+                Equipment.WeaponId = weapon.Id;
+            }
+            else if (item is Armor armor)
+            {
+                Equipment.Armor = armor;
+                Equipment.ArmorId = armor.Id;
+            }
+
             Console.WriteLine($"{Name} equipped {item.Name}.");
         }
 
@@ -100,6 +124,18 @@ namespace EFCoreRPGEntities.Models
             }
 
             Equipment.RemoveItem(item);
+
+            if (ReferenceEquals(Equipment.Weapon, item))
+            {
+                Equipment.Weapon = null;
+                Equipment.WeaponId = null;
+            }
+            else if (ReferenceEquals(Equipment.Armor, item))
+            {
+                Equipment.Armor = null;
+                Equipment.ArmorId = null;
+            }
+
             Inventory.AddItem(item);
             Console.WriteLine($"{Name} unequipped {item.Name}.");
         }

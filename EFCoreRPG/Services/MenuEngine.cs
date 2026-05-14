@@ -34,6 +34,7 @@ public class MenuEngine
         Console.WriteLine("4. View abilities");
         Console.WriteLine("5. Rest to recover health");
         Console.WriteLine("6. Fight the monster");
+        Console.WriteLine("7. Loot nearby");
         Console.WriteLine("0. Exit adventure");
         Console.Write("Enter your choice: ");
         var choice = Console.ReadLine();

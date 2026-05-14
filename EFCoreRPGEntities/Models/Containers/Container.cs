@@ -13,6 +13,10 @@ namespace EFCoreRPGEntities.Models.Containers
 
         public string ContainerType { get; set; } = string.Empty;
 
+        public int? ParentContainerId { get; set; }
+        public virtual Container? ParentContainer { get; set; }
+        public virtual ICollection<Container> ChildContainers { get; set; } = new List<Container>();
+
         public virtual ICollection<Item> Items { get; set; } = new List<Item>();
 
         public virtual void AddItem(Item item)
@@ -25,7 +29,5 @@ namespace EFCoreRPGEntities.Models.Containers
         {
             return Items.Remove(item);
         }
-
-
     }
 }

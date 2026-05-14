@@ -1,4 +1,6 @@
-﻿namespace EFCoreRPGEntities.Models;
+﻿using EFCoreRPGEntities.Models.Containers;
+
+namespace EFCoreRPGEntities.Models;
 
 public class Room
 {
@@ -22,4 +24,6 @@ public class Room
     // Navigation property to Characters
     public virtual ICollection<Player> Players { get; set; }
     public virtual ICollection<Monster> Monsters { get; set; }
+    public virtual ICollection<Chest> Chests { get; set; } = new List<Chest>();
+
 }

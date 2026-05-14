@@ -208,6 +208,9 @@ public class GameEngine
                             return;
                         }
                         break;
+                    case "7":
+                        LootNearby(player);
+                        break;
                     case "0":
                         //exit adventure and return to main menu
                         Console.WriteLine("Exiting adventure...");
@@ -277,7 +280,6 @@ public class GameEngine
     }
     public void DisplayRooms()
     {
-        //TODO: Update this to show the monsters in the room as well as if they are dead or alive
         var rooms = _context.Rooms.Include(r => r.Players).Include(r => r.Monsters).ToList();
 
         foreach (var room in rooms)
@@ -389,7 +391,7 @@ public class GameEngine
             return null;
         }
 
-        Console.WriteLine($"Welcome, {selectedPlayer.Name}! Your adventure begins in the {selectedPlayer.Room?.Name}.");
+        Console.WriteLine($"Welcome, {selectedPlayer.Name}! Your adventure begins in the {selectedPlayer.Room?.Name} ");
         return selectedPlayer;
     }
 
@@ -435,6 +437,7 @@ public class GameEngine
         var room = _context.Rooms
             .Include(r => r.Players)
             .Include(r => r.Monsters)
+            .Include(r => r.Chests)
             .FirstOrDefault(r => r.Id == player.RoomId);
 
         if (room == null)
@@ -443,7 +446,7 @@ public class GameEngine
             return;
         }
 
-        Console.WriteLine($"\n==== {room.Name} ===="); 
+        Console.WriteLine($"\n==== {room.Name} ====");
         Console.WriteLine(room.Description);
 
         var exits = new List<string>();
@@ -464,9 +467,15 @@ public class GameEngine
 
             Console.WriteLine($"Monsters here: {string.Join(", ", monsterStatuses)}");
         }
+
+        if (room.Chests.Any())
+        {
+            var chestNames = room.Chests.Select(c => c.ContainerType ?? "Chest");
+            Console.WriteLine($"Chests here: {string.Join(", ", chestNames)}");
+        }
     }
 
-    private void ManageInventory(Player player)
+    public void ManageInventory(Player player)
     {
         EnsureInventoryLoaded(player);
 
@@ -497,7 +506,7 @@ public class GameEngine
         }
     }
 
-    private void EnsureInventoryLoaded(Player player)
+    public void EnsureInventoryLoaded(Player player)
     {
         //TODO: Review this to understand loading of context references
         _context.Entry(player).Reference(p => p.Inventory).Load();
@@ -538,7 +547,7 @@ public class GameEngine
         }
     }
 
-    private void DisplayAllItems(Player player)
+    public void DisplayAllItems(Player player)
     {
         Console.WriteLine("\n--- Inventory Items ---");
         if (player.Inventory?.Items.Any() == true)
@@ -567,7 +576,7 @@ public class GameEngine
         }
     }
 
-    private void UseInventoryItem(Player player)
+    public void UseInventoryItem(Player player)
     {
         var items = player.Inventory?.Items
             .OfType<Consumable>()
@@ -591,7 +600,7 @@ public class GameEngine
         _context.SaveChanges();
     }
 
-    private void EquipInventoryItem(Player player)
+    public void EquipInventoryItem(Player player)
     {
         var items = player.Inventory?.Items
             .Where(i => i is Weapon || i is Armor)
@@ -613,7 +622,7 @@ public class GameEngine
         _context.SaveChanges();
     }
 
-    private void UnequipItem(Player player)
+    public void UnequipItem(Player player)
     {
         var items = player.Equipment?.Items.ToList() ?? new List<Item>();
         if (!items.Any())
@@ -632,7 +641,7 @@ public class GameEngine
         _context.SaveChanges();
     }
 
-    private Item? PromptForItemSelection(IReadOnlyList<Item> items, string prompt)
+    public Item? PromptForItemSelection(IReadOnlyList<Item> items, string prompt)
     {
         Console.WriteLine(prompt);
         for (int i = 0; i < items.Count; i++)
@@ -649,5 +658,169 @@ public class GameEngine
         }
 
         return items[choice - 1];
+    }
+
+    public void LootNearby(Player player)
+    {
+        EnsureInventoryLoaded(player);
+
+        var room = _context.Rooms
+            .Include(r => r.Monsters)
+                .ThenInclude(m => m.Loot)
+                .ThenInclude(l => l.Items)
+            .Include(r => r.Chests)
+                .ThenInclude(c => c.Items)
+            .FirstOrDefault(r => r.Id == player.RoomId);
+
+        if (room == null)
+        {
+            Console.WriteLine("Current room not found.");
+            return;
+        }
+
+        if (room.Monsters.Any(m => m.IsAlive))
+        {
+            Console.WriteLine("You can't loot while living monsters are in the room!");
+            return;
+        }
+
+        var hasLootableMonsters = room.Monsters.Any(m => !m.IsAlive && m.Loot?.Items.Any() == true);
+        var hasLootableChests = room.Chests.Any(c => c.Items.Any());
+
+        if (!hasLootableMonsters && !hasLootableChests)
+        {
+            Console.WriteLine("Nothing to loot here.");
+            return;
+        }
+
+        Console.WriteLine("\n--- Loot Menu ---");
+        if (hasLootableMonsters) Console.WriteLine("1. Loot a dead monster");
+        if (hasLootableChests) Console.WriteLine("2. Loot a chest");
+        Console.WriteLine("0. Back");
+        Console.Write("Enter your choice: ");
+
+        var choice = Console.ReadLine();
+        switch (choice)
+        {
+            case "1" when hasLootableMonsters:
+                LootDeadMonster(room, player);
+                break;
+            case "2" when hasLootableChests:
+                LootChest(room, player);
+                break;
+            case "0":
+                return;
+            default:
+                Console.WriteLine("Invalid option.");
+                break;
+        }
+    }
+
+    public void LootDeadMonster(Room room, Player player)
+    {
+        var lootableMonsters = room.Monsters
+            .Where(m => !m.IsAlive && m.Loot?.Items.Any() == true)
+            .ToList();
+
+        if (!lootableMonsters.Any())
+        {
+            Console.WriteLine("No dead monsters with loot here.");
+            return;
+        }
+
+        Monster selectedMonster;
+        if (lootableMonsters.Count == 1)
+        {
+            selectedMonster = lootableMonsters[0];
+        }
+        else
+        {
+            Console.WriteLine("Choose a dead monster to loot:");
+            for (int i = 0; i < lootableMonsters.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. {lootableMonsters[i].Name}");
+            }
+
+            Console.Write("Enter number: ");
+            if (!int.TryParse(Console.ReadLine(), out var choice) ||
+                choice < 1 || choice > lootableMonsters.Count)
+            {
+                Console.WriteLine("Invalid choice.");
+                return;
+            }
+
+            selectedMonster = lootableMonsters[choice - 1];
+        }
+
+        if (selectedMonster.Loot == null)
+        {
+            Console.WriteLine($"{selectedMonster.Name} has no loot.");
+            return;
+        }
+
+        LootContainer(selectedMonster.Loot, player, $"{selectedMonster.Name}'s loot");
+    }
+
+    public void LootChest(Room room, Player player)
+    {
+        var lootableChests = room.Chests
+            .Where(c => c.Items.Any())
+            .ToList();
+
+        if (!lootableChests.Any())
+        {
+            Console.WriteLine("No chests with loot here.");
+            return;
+        }
+
+        Chest selectedChest;
+        if (lootableChests.Count == 1)
+        {
+            selectedChest = lootableChests[0];
+        }
+        else
+        {
+            Console.WriteLine("Choose a chest to loot:");
+            for (int i = 0; i < lootableChests.Count; i++)
+            {
+                var chestName = lootableChests[i].ContainerType ?? "Chest";
+                Console.WriteLine($"{i + 1}. {chestName}");
+            }
+
+            Console.Write("Enter number: ");
+            if (!int.TryParse(Console.ReadLine(), out var choice) ||
+                choice < 1 || choice > lootableChests.Count)
+            {
+                Console.WriteLine("Invalid choice.");
+                return;
+            }
+
+            selectedChest = lootableChests[choice - 1];
+        }
+
+        var label = selectedChest.ContainerType ?? "Chest";
+        LootContainer(selectedChest, player, label);
+    }
+
+    public void LootContainer(Container container, Player player, string sourceName)
+    {
+        var items = container.Items.ToList();
+        if (!items.Any())
+        {
+            Console.WriteLine($"No items to loot from {sourceName}.");
+            return;
+        }
+
+        var selected = PromptForItemSelection(items, $"Choose an item to loot from {sourceName}:");
+        if (selected == null)
+        {
+            return;
+        }
+
+        if (player.PickUp(selected))
+        {
+            container.RemoveItem(selected);
+            _context.SaveChanges();
+        }
     }
 }

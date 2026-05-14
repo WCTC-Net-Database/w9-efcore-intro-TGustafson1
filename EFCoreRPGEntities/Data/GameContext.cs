@@ -78,6 +78,7 @@ public class GameContext : DbContext
             .UsingEntity(j => j.ToTable("CharacterAbilities"));
 
         // One-to-many relationships for Equipment
+        //TODO: Ensure only 1 weapon and 1 armor piece can be equipped at once
         modelBuilder.Entity<Equipment>()
             .HasOne(e => e.Weapon)
             .WithMany()
@@ -139,7 +140,19 @@ public class GameContext : DbContext
             .Property(m => m.IsAlive)
             .HasDefaultValue(true);
 
-        base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<Container>()
+            .HasOne(c => c.ParentContainer)
+            .WithMany(c => c.ChildContainers)
+            .HasForeignKey(c => c.ParentContainerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Room>()
+            .HasMany(r => r.Chests)
+            .WithOne(c => c.Room)
+            .HasForeignKey(c => c.RoomId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+    base.OnModelCreating(modelBuilder);
     }
 
     public void Seed()
@@ -231,6 +244,14 @@ public class GameContext : DbContext
                 AttackPower = 2
             };
 
+            var steelSword = new Weapon
+            {
+                Name = "Steel Sword",
+                Weight = 6,
+                Value = 45,
+                AttackPower = 4
+            };
+
             var leatherArmor = new Armor
             {
                 Name = "Leather Armor",
@@ -253,12 +274,18 @@ public class GameContext : DbContext
 
             wizardInventory.AddItem(abilityRestorePotion);
 
+            // create containers
+            var armoryChest = new Chest { ContainerType = "Chest", Room = room3 };
+            armoryChest.AddItem(steelSword);
+
             Add(knightInventory);
             Add(knightEquipment);
             Add(wizardInventory);
             Add(wizardEquipment);
+            Add(armoryChest);
 
             Items.AddRange(ironSword, leatherArmor, abilityRestorePotion);
+            SaveChanges();
 
             var character1 = new Player
             {

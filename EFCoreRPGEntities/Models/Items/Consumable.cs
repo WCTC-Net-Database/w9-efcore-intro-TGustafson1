@@ -24,8 +24,11 @@ namespace EFCoreRPGEntities.Models.Items
                     player.TemporaryHealth += EffectStrength;
                     break;
                 case ConsumableEffect.AbilityRestore:
-                    //TODO: Account for multiple abilities and restore them properly
-                    ((PlayerAbility)player.Abilities.FirstOrDefault()).Uses += EffectStrength;
+                    //TODO: Make this successfully choose which ability to restore uses for
+                    foreach (var ability in player.Abilities.OfType<PlayerAbility>())
+                    {
+                        ability.Uses += EffectStrength;
+                    }
                     break;
                 case ConsumableEffect.StrengthBoost:
                     player.TemporaryStrength += EffectStrength;
