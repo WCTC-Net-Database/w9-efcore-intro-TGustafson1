@@ -355,7 +355,6 @@ public class GameContext : DbContext
             };
 
             Characters.AddRange(character1, character2, character3, character4, character5);
-
             SaveChanges();
 
             Console.WriteLine("\nGame world seeded successfully.\n");
