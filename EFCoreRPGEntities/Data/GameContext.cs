@@ -51,7 +51,8 @@ public class GameContext : DbContext
             .HasValue<Weapon>("Weapon")
             .HasValue<Armor>("Armor")
             .HasValue<Consumable>("Consumable")
-            .HasValue<KeyItem>("KeyItem");
+            .HasValue<KeyItem>("KeyItem")
+            .HasValue<TrophyItem>("TrophyItem");
 
         // One-to-many relationship between Container and Item
         modelBuilder.Entity<Item>()
@@ -219,7 +220,7 @@ public class GameContext : DbContext
                 Description = "hurls a fiery ball that explodes on impact.",
                 AbilityLevel = 2,
                 Uses = 2,
-                Damage = 5,
+                Damage = 8,
                 Characters = new List<Character>()
             };
 
@@ -307,10 +308,43 @@ public class GameContext : DbContext
                 Value = 50
             };
 
+            var bronzeKey = new KeyItem
+            {
+                Name = "Bronze Key",
+                Weight = 1,
+                Value = 10
+            };
+
+            var strengthPotion = new Consumable
+            {
+                Name = "Strength Potion",
+                Weight = 1,
+                Value = 20,
+                Effect = ConsumableEffect.StrengthBoost,
+                EffectStrength = 2
+            };
+
+            var diamondTrophy = new TrophyItem
+            {
+                Name = "Diamond-Encrusted Trophy",
+                Weight = 1,
+                Value = 1000
+            };
+
+            var ironHelm = new Armor
+            {
+                Name = "Iron Helm",
+                Weight = 4,
+                Value = 15,
+                Defense = 3
+            };
+
             knightInventory.AddItem(ironSword);
             knightInventory.AddItem(leatherArmor);
 
             wizardInventory.AddItem(abilityRestorePotion);
+
+
 
             // create containers
             var armoryChest = new Chest { ContainerType = "Armory Chest", Room = room3 };
@@ -325,6 +359,20 @@ public class GameContext : DbContext
             var libraryChest = new Chest { ContainerType = "Library Chest", Room = room6 };
             libraryChest.AddItem(goldenKey);
 
+            var alchemyLabChest = new Chest { ContainerType = "Alchemy Lab Chest", Room = room8 };
+            alchemyLabChest.AddItem(bronzeKey);
+
+            var goblinShamanLoot = new MonsterLoot { ContainerType = "Goblin Shaman Loot" };
+            goblinShamanLoot.AddItem(strengthPotion);
+
+            var skeletonLoot = new MonsterLoot { ContainerType = "Skeleton Loot" };
+            skeletonLoot.AddItem(ironHelm);
+
+            var orcKingLoot = new MonsterLoot { ContainerType = "Orc King Loot" };
+            orcKingLoot.AddItem(diamondTrophy);
+
+            Add(goblinShamanLoot);
+            Add(skeletonLoot);
             Add(knightInventory);
             Add(knightEquipment);
             Add(wizardInventory);
@@ -333,9 +381,15 @@ public class GameContext : DbContext
             Add(guardRoomChest);
             Add(dungeonChest);
             Add(libraryChest);
+            Add(alchemyLabChest);
+            Add(orcKingLoot);
 
-            Items.AddRange(ironSword, leatherArmor, steelSword, abilityRestorePotion, healthPotion, ironKey, goldenKey);
+            Items.AddRange(ironSword, leatherArmor, steelSword, abilityRestorePotion, strengthPotion, healthPotion,
+                ironKey, goldenKey, bronzeKey, ironHelm, diamondTrophy);
             SaveChanges();
+
+            armoryChest.IsLocked = true;
+            armoryChest.RequiredKeyItemId = bronzeKey.Id;
 
             var doors = new List<Door>
             {
@@ -406,7 +460,8 @@ public class GameContext : DbContext
                 Defense = 3,
                 AggressionLevel = 8,
                 IsAlive = true,
-                Abilities = new List<Ability> { heckle }
+                Abilities = new List<Ability> { heckle },
+                Loot = goblinShamanLoot
             };
 
             // Place an enemy in the boss room
@@ -420,11 +475,25 @@ public class GameContext : DbContext
                 Defense = 5,
                 AggressionLevel = 10,
                 IsAlive = true,
-                Abilities = new List<Ability> { heckle }
+                Abilities = new List<Ability> { heckle },
+                Loot = orcKingLoot
             };
 
+            var character6 = new Monster
+            {
+                Name = "Skeleton",
+                Level = 2,
+                Room = room4,
+                Health = 12,
+                Strength = 4,
+                Defense = 2,
+                AggressionLevel = 6,
+                IsAlive = true,
+                Abilities = new List<Ability> { },
+                Loot = skeletonLoot
+            };
 
-            Characters.AddRange(character1, character2, character3, character4, character5);
+            Characters.AddRange(character1, character2, character3, character4, character5, character6);
             SaveChanges();
         }
     }

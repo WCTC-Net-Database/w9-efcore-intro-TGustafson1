@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using EFCoreRPGEntities.Data;
 using EFCoreRPGEntities.Models;
 using EFCoreRPGEntities.Models.Abilities;
+using EFCoreRPGEntities.Models.Items;
 
 namespace EFCoreRPG.Services
 {
@@ -25,7 +26,7 @@ namespace EFCoreRPG.Services
 
             while (!combatEnded)
             {
-                Console.WriteLine($"Player health: {player.TemporaryHealth}\t{monster.Name} health: {monster.TemporaryHealth}");
+                Console.WriteLine($"Player health: {player.TemporaryHealth}/{player.Health}\t{monster.Name} health: {monster.TemporaryHealth}/{monster.Health}");
                 Console.WriteLine();
                 // Player's turn
                 Console.WriteLine("Player's turn:");
@@ -66,53 +67,109 @@ namespace EFCoreRPG.Services
 
         public void PlayerTurn(Player player, Monster monster)
         {
-            //choice between attack, ability, or flee
-            Console.WriteLine("1. Attack\n2. Use Ability\n3. Flee");
-            Console.Write("Enter your choice: ");
-            var choice = Console.ReadLine();
-            Console.WriteLine();
-            switch (choice)
+            while (true)
             {
-                case "1":
-                    Console.WriteLine($"{player.Name} attacks!");
-                    player.Attack(monster);
-                    break;
-                case "2":
-                    if (player.Abilities.Any())
-                    {
-                        Console.WriteLine("Choose an ability:");
-                        for (int i = 0; i < player.Abilities.Count; i++)
+                //choice between attack, ability, item, or flee
+                Console.WriteLine("1. Attack\n2. Use Ability\n3. Use Item\n4. Flee");
+                Console.Write("Enter your choice: ");
+                var choice = Console.ReadLine();
+                Console.WriteLine();
+                switch (choice)
+                {
+                    case "1":
+                        Console.WriteLine($"{player.Name} attacks!");
+                        player.Attack(monster);
+                        return;
+                    case "2":
+                        if (player.Abilities.Any())
                         {
-                            Console.WriteLine($"{i + 1}. {player.Abilities.ElementAt(i).Name}: {((PlayerAbility)player.Abilities.ElementAt(i)).Uses} uses left");
-                        }
-                        var abilityChoice = Console.ReadLine();
-                        if (int.TryParse(abilityChoice, out int abilityIndex) && abilityIndex > 0 && abilityIndex <= player.Abilities.Count)
-                        {
-                            var ability = player.Abilities.ElementAt(abilityIndex - 1);
-                            player.UseAbility(ability, monster);
+                            Console.WriteLine("Choose an ability:");
+                            for (int i = 0; i < player.Abilities.Count; i++)
+                            {
+                                Console.WriteLine($"{i + 1}. {player.Abilities.ElementAt(i).Name}: {((PlayerAbility)player.Abilities.ElementAt(i)).Uses} uses left");
+                            }
+                            var abilityChoice = Console.ReadLine();
+                            if (int.TryParse(abilityChoice, out int abilityIndex) && abilityIndex > 0 && abilityIndex <= player.Abilities.Count)
+                            {
+                                var ability = player.Abilities.ElementAt(abilityIndex - 1);
+                                player.UseAbility(ability, monster);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Invalid choice. Defaulting to attack.");
+                                player.Attack(monster);
+                            }
                         }
                         else
                         {
-                            Console.WriteLine("Invalid choice. Defaulting to attack.");
+                            Console.WriteLine("No abilities available. Defaulting to attack.");
                             player.Attack(monster);
                         }
-                    }
-                    else
-                    {
-                        Console.WriteLine("No abilities available. Defaulting to attack.");
-                        player.Attack(monster);
-                    }
-                    break;
-                case "3":
-                    //regenerate monster's stats to full if player flees
-                    monster.TemporaryHealth = monster.Health;
-                    monster.TemporaryDefense = monster.Defense;
-                    monster.TemporaryStrength = monster.Strength;
+                        return;
+                    case "3":
+                        if (UseConsumableItem(player))
+                        {
+                            return;
+                        }
+                        break;
+                    case "4":
+                        //regenerate monster's stats to full if player flees
+                        monster.TemporaryHealth = monster.Health;
+                        monster.TemporaryDefense = monster.Defense;
+                        monster.TemporaryStrength = monster.Strength;
 
-                    Console.WriteLine("You flee the battle cowardly! The monster regains its strength.");
-                    combatEnded = true;
-                    break;
+                        Console.WriteLine("You flee the battle cowardly! The monster regains its strength.");
+                        combatEnded = true;
+                        return;
+                    default:
+                        Console.WriteLine("Invalid choice.");
+                        break;
+                }
             }
+        }
+
+        private bool UseConsumableItem(Player player)
+        {
+            var consumables = player.Inventory?.Items
+                .OfType<Consumable>()
+                .Cast<Item>()
+                .ToList() ?? new List<Item>();
+
+            if (!consumables.Any())
+            {
+                Console.WriteLine("No usable items in inventory.");
+                return false;
+            }
+
+            Console.WriteLine("Choose an item to use:");
+            for (int i = 0; i < consumables.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. {consumables[i].Name}");
+            }
+            Console.WriteLine("0. Back");
+
+            Console.Write("Enter number: ");
+            if (!int.TryParse(Console.ReadLine(), out var choice))
+            {
+                Console.WriteLine("Invalid choice.");
+                return false;
+            }
+
+            if (choice == 0)
+            {
+                return false;
+            }
+
+            if (choice < 1 || choice > consumables.Count)
+            {
+                Console.WriteLine("Invalid choice.");
+                return false;
+            }
+
+            var selected = consumables[choice - 1];
+            player.UseItem(selected);
+            player.Inventory?.RemoveItem(selected);
+            return true;
         }
 
         public void MonsterTurn(Monster attacker, Player defender)

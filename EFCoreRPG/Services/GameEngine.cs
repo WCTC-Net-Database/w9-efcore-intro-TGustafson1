@@ -14,6 +14,7 @@ public class GameEngine
     private readonly MenuEngine _menu;
 
     private readonly Random random = new Random();
+    private bool _gameWon;
 
 
     public GameEngine(GameContext context, CombatEngine combat, MenuEngine menu)
@@ -120,7 +121,6 @@ public class GameEngine
 
             while (true)
             {
-                //TODO: Figure out why abilities aren't showing up in the adventure menu, though they are in the data.
                 DisplayCurrentRoom(player);
 
                 var choice = _menu.AdventureMenu();
@@ -222,7 +222,10 @@ public class GameEngine
                         break;
                 }
 
-
+                if (_gameWon)
+                {
+                    return;
+                }
             }
         }
 
@@ -835,6 +838,12 @@ public class GameEngine
         {
             container.RemoveItem(selected);
             _context.SaveChanges();
+
+            if (selected is TrophyItem)
+            {
+                ShowVictoryScreen();
+                _gameWon = true;
+            }
         }
     }
 
@@ -868,5 +877,16 @@ public class GameEngine
 
         Console.WriteLine($"You unlocked the {targetName} with {key.Name}.");
         return true;
+    }
+
+    private void ShowVictoryScreen()
+    {
+        Console.WriteLine();
+        Console.WriteLine("=========================================");
+        Console.WriteLine("   🎉 CONGRATULATIONS, HERO! 🎉");
+        Console.WriteLine(" You claimed the Diamond-Encrusted Trophy!");
+        Console.WriteLine(" The Orc King has fallen and peace returns.");
+        Console.WriteLine("=========================================");
+        Console.WriteLine();
     }
 }
