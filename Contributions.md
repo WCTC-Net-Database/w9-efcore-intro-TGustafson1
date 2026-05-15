@@ -1,6 +1,10 @@
 1. Starting from the week 9 template and building it forward rather than using the templates
-2. Have added many things from the starting point including room navigation, abilities, item/inventory management, chests and monster loot, consumables, etc. 
-3. Mostly I have worked on my own, however I started using AI a little more as the due date came close - there are a few sections such as the inventory menu which were handled primarily using Copilot. 
+
+2. Have added many things from the starting point including room navigation, abilities, item/inventory management, chests and monster loot, consumables, lockables, etc. 
+
+3. Mostly I have worked on my own, however I started using AI more as the due date came close - there are a few sections such as the inventory menu which were handled primarily using Copilot. I also used it a good amount for adding data to the database in my seed method, but it had a nasty habit of trying to overwrite other items/characters/etc. when adding new ones. 
+
 4. I think the hardest part for me was understanding the handling of services and dependency injection - it is very easy to think in a linear manner where the program's control jumps from one class to the next - it gets more difficult to understand where the flow of the logic should go "in the big picture" especially when we're using many different services and engines to accomplish our tasks. 
-5. 
+
+5. I think this course was valuable to me in learning how the tables and database interact with a codebase as opposed to using something like .json files for storing data. It was good interacting with the console and both dotnet and ef framework to set things up, also seeing how tricky it can be to make sure the database stays up-to-date and preventing issues with the SQL it created. LINQ was a little tricky, but once the chained methods started to click, i also really began to understand the usage of the lambda expressions and how it ties together syntactically. Again, one thing that I found difficult to wrap my head around was the usage of the services manager and how exactly to handle dependency injection amongst the different engines/services I had created. Ultimately, most of the logic landed in the game engine, but I do wonder if there could have been a cleaner way to separate out some of that logic into their own services and inject them to the game engine. I think I struggled with keeping up with the course but that is more due to my own study habits, I tend to procrastinate on my work and having flexible deadlines can be a double-edged sword for me. Overall I found the RPG was a great backdrop for learning the content and it was easy to relate to concepts and ideas I have seen in my own experience playing video games!
 
